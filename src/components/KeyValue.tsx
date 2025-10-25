@@ -5,7 +5,7 @@ export default function KeyValue() {
     {
       icon: Shield,
       title: 'Safety',
-      description: 'Projects Verified,\nRewards Secured',
+      description: 'Projects Verified, Rewards Secured',
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-500',
     },

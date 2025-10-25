@@ -1,4 +1,7 @@
+'use client';
+
 import { Zap, DollarSign, Shield, Globe } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function WhyChoose() {
   const features = [
@@ -50,21 +53,33 @@ export default function WhyChoose() {
     <section className="w-full bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-16">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-4xl font-bold mb-3" style={{ color: '#344256' }}>
             Why Choose PayTask?
           </h2>
           <p style={{ color: '#344256' }}>
             The future of work is transparent, fair, and borderless
           </p>
-        </div>
+        </motion.div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {features.map((feature) => (
-            <div
+          {features.map((feature, index) => (
+            <motion.div
               key={feature.title}
-              className="bg-white rounded-2xl p-8 hover:shadow-lg transition-shadow" style={{ borderColor: '#D9D9D9', borderWidth: '1px', borderStyle: 'solid' }}
+              className="bg-white rounded-2xl p-8 hover:shadow-lg transition-shadow" 
+              style={{ borderColor: '#D9D9D9', borderWidth: '1px', borderStyle: 'solid' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ scale: 1.03 }}
             >
               <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#E8F5F1' }}>
                 <feature.icon className="w-6 h-6" style={{ color: feature.iconColor }} />
@@ -75,21 +90,27 @@ export default function WhyChoose() {
               <p className="text-sm" style={{ color: '#344256' }}>
                 {feature.description}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {stats.map((stat) => (
-            <div
+          {stats.map((stat, index) => (
+            <motion.div
               key={stat.label}
-              className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#F5F5F5' }}
+              className="rounded-2xl p-8 text-center" 
+              style={{ backgroundColor: '#F5F5F5' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ scale: 1.05 }}
             >
               <p className="text-sm mb-2" style={{ color: '#344256' }}>{stat.label}</p>
               <p className="text-4xl font-bold mb-1" style={{ color: '#20A277' }}>{stat.value}</p>
               <p className="text-sm" style={{ color: '#344256' }}>{stat.subtitle}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

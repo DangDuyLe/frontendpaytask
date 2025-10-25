@@ -2,6 +2,7 @@
 
 import { Wallet } from 'lucide-react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 export default function SupportedEcosystem() {
   const wallets = [
@@ -41,24 +42,42 @@ export default function SupportedEcosystem() {
     <section className="w-full bg-gray-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Badge */}
-        <div className="flex justify-center mb-6">
+        <motion.div 
+          className="flex justify-center mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ backgroundColor: '#E3F2FD', color: '#2463EB' }}>
             <Wallet className="w-4 h-4" />
             Web3 Integration
           </div>
-        </div>
+        </motion.div>
 
         {/* Heading */}
-        <h2 className="text-4xl font-bold text-center mb-12" style={{ color: '#344256' }}>
+        <motion.h2 
+          className="text-4xl font-bold text-center mb-12" 
+          style={{ color: '#344256' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
           Supported Ecosystem
-        </h2>
+        </motion.h2>
 
         {/* Wallet Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-5xl mx-auto">
-          {wallets.map((wallet) => (
-            <div
+          {wallets.map((wallet, index) => (
+            <motion.div
               key={wallet.name}
               className="flex flex-col items-center gap-4 bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
             >
               <div
                 className={`w-16 h-16 ${wallet.bgColor} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden relative`}
@@ -81,7 +100,7 @@ export default function SupportedEcosystem() {
                 />
               </div>
               <span className="text-sm font-medium text-gray-900">{wallet.name}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

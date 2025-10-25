@@ -1,4 +1,7 @@
+'use client';
+
 import { Shield, Hand, Gift, Users, TrendingUp, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function KeyValue() {
   const earnRewards = [
@@ -53,27 +56,45 @@ export default function KeyValue() {
     <section className="w-full py-20" style={{ backgroundColor: '#F5F5F5' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <h2 className="text-3xl font-bold text-center mb-16" style={{ color: '#344256' }}>
+        <motion.h2 
+          className="text-3xl font-bold text-center mb-16" 
+          style={{ color: '#344256' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           Our Key Value
-        </h2>
+        </motion.h2>
 
         {/* Centered Container with Stacked Layout */}
         <div className="max-w-5xl mx-auto space-y-16">
           {/* Earn Rewards Section */}
           <div>
-            <div className="text-center mb-10">
+            <motion.div 
+              className="text-center mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <h3 className="text-3xl font-bold" style={{ color: '#344256' }}>
                 Earn <span style={{ color: '#20A277' }}>Rewards</span>
               </h3>
               <p className="mt-2" style={{ color: '#344256' }}>For Users</p>
-            </div>
+            </motion.div>
 
             {/* Feature Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {earnRewards.map((feature, index) => (
-                <div
+                <motion.div
                   key={feature.title}
                   className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
                 >
                   <div className="flex flex-col items-center text-center space-y-4">
                     <div className={`w-16 h-16 ${feature.iconBg} rounded-2xl flex items-center justify-center shadow-sm`}>
@@ -84,33 +105,50 @@ export default function KeyValue() {
                       <p className="text-sm text-gray-600 whitespace-pre-line">{feature.description}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* Divider */}
-          <div className="flex items-center justify-center">
+          <motion.div 
+            className="flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <div className="h-px bg-gray-300 w-32"></div>
             <div className="mx-4 w-3 h-3 rounded-full" style={{ backgroundColor: '#20A277' }}></div>
             <div className="h-px bg-gray-300 w-32"></div>
-          </div>
+          </motion.div>
 
           {/* Getting Growth Section */}
           <div>
-            <div className="text-center mb-10">
+            <motion.div 
+              className="text-center mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <h3 className="text-3xl font-bold" style={{ color: '#344256' }}>
                 Getting <span style={{ color: '#2463EB' }}>Growth</span>
               </h3>
               <p className="mt-2" style={{ color: '#344256' }}>For Communities</p>
-            </div>
+            </motion.div>
 
             {/* Feature Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {gettingGrowth.map((feature, index) => (
-                <div
+                <motion.div
                   key={feature.title}
                   className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
                 >
                   <div className="flex flex-col items-center text-center space-y-4">
                     <div className={`w-16 h-16 ${feature.iconBg} rounded-2xl flex items-center justify-center shadow-sm`}>
@@ -121,7 +159,7 @@ export default function KeyValue() {
                       <p className="text-sm text-gray-600">{feature.description}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

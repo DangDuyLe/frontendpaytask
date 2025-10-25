@@ -1,4 +1,7 @@
+'use client';
+
 import { UserPlus, Search, CheckCircle, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function HowItWorks() {
   const steps = [
@@ -32,21 +35,34 @@ export default function HowItWorks() {
     <section className="w-full py-20" style={{ backgroundColor: '#F5F5F5' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-16">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-4xl font-bold mb-3" style={{ color: '#344256' }}>
             How PayTask Works
           </h2>
           <p style={{ color: '#344256' }}>
             Get started in four simple steps and join the future of work
           </p>
-        </div>
+        </motion.div>
 
         {/* Steps */}
         <div className="relative max-w-5xl mx-auto">
           {/* Steps Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
-              <div key={step.title} className="relative flex flex-col items-center text-center">
+              <motion.div 
+                key={step.title} 
+                className="relative flex flex-col items-center text-center"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
                 {/* Icon Circle */}
                 <div className="relative z-10 w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg" style={{ backgroundColor: '#20A277' }}>
                   <step.icon className="w-12 h-12 text-white" strokeWidth={2.5} />
@@ -69,7 +85,7 @@ export default function HowItWorks() {
                 <p className="text-sm max-w-xs" style={{ color: '#344256' }}>
                   {step.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

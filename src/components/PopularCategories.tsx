@@ -1,4 +1,7 @@
+'use client';
+
 import { Database, ShoppingCart, FileText, FileEdit, Image, TestTube } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function PopularCategories() {
   const categories = [
@@ -50,21 +53,33 @@ export default function PopularCategories() {
     <section className="w-full bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-12">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-4xl font-bold mb-3" style={{ color: '#344256' }}>
             Popular Task Categories
           </h2>
           <p style={{ color: '#344256' }}>
             Find the perfect micro-tasks that match your skills and interests
           </p>
-        </div>
+        </motion.div>
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {categories.map((category) => (
-            <div
+          {categories.map((category, index) => (
+            <motion.div
               key={category.title}
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow cursor-pointer group" style={{ backgroundColor: '#F5F5F5' }}
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow cursor-pointer group" 
+              style={{ backgroundColor: '#F5F5F5' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
             >
               <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: category.iconBg }}>
                 <category.icon className="w-6 h-6" style={{ color: category.iconColor }} />
@@ -75,7 +90,7 @@ export default function PopularCategories() {
               <p className="text-sm" style={{ color: '#344256' }}>
                 {category.description}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

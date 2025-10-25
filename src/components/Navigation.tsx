@@ -1,9 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Navigation() {
   return (
-    <nav className="w-full bg-white border-b border-gray-100">
+    <motion.nav 
+      className="w-full bg-white border-b border-gray-100"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -104,6 +112,6 @@ export default function Navigation() {
           </div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }

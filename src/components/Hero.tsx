@@ -1,4 +1,7 @@
+'use client';
+
 import { Search, Sparkles, Users, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Hero() {
   return (
@@ -6,25 +9,41 @@ export default function Hero() {
       {/* Container */}
       <div className="w-full mx-auto">
         {/* Hero Image with Rounded Corners */}
-        <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+        <motion.div 
+          className="relative rounded-3xl overflow-hidden shadow-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <img
             src="/person working.jpg"
             alt="Person working on laptop"
-            className="w-full h-[4800px] lg:h-[580px] object-cover"
+            className="w-full h-[480px] lg:h-[580px] object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-transparent lg:from-white/98 lg:via-white/90 lg:to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/40 to-transparent lg:from-white/60 lg:via-white/40 lg:to-transparent"></div>
           
           {/* Content Overlay */}
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-2xl space-y-6 py-8 px-8 lg:px-12">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ backgroundColor: '#E8F5F1', color: '#20A277' }}>
+              <motion.div 
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" 
+                style={{ backgroundColor: '#E8F5F1', color: '#20A277' }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
                 <Sparkles className="w-4 h-4" />
                 Web3-Powered Platform
-              </div>
+              </motion.div>
 
               {/* Heading */}
-              <div className="space-y-3">
+              <motion.div 
+                className="space-y-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight" style={{ color: '#344256' }}>
                   Turn Your Skills Into{' '}
                   <span style={{ color: '#20A277' }}>Real Earnings</span>
@@ -33,10 +52,15 @@ export default function Hero() {
                   Connect with global opportunities on Web3.{' '}
                   <span className="font-semibold">Transparent, fair,</span> and instant payments for everyone.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Search Bar */}
-              <div className="flex gap-2 max-w-xl">
+              <motion.div 
+                className="flex gap-2 max-w-xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
                 <div className="flex-1 relative bg-white rounded-lg shadow-sm">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -49,10 +73,15 @@ export default function Hero() {
                 <button className="text-white px-6 py-3 rounded-lg font-medium transition-colors hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: '#20A277' }}>
                   Search
                 </button>
-              </div>
+              </motion.div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4">
+              <motion.div 
+                className="flex flex-wrap gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
                 <button className="flex items-center gap-2 text-white px-6 py-3 rounded-lg font-medium transition-colors hover:opacity-90" style={{ backgroundColor: '#20A277' }}>
                   Find Work
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,10 +91,15 @@ export default function Hero() {
                 <button className="bg-white px-6 py-3 rounded-lg font-medium border transition-colors hover:bg-gray-50" style={{ color: '#344256', borderColor: '#D9D9D9' }}>
                   Post a Task
                 </button>
-              </div>
+              </motion.div>
 
               {/* Stats */}
-              <div className="flex gap-8 pt-4">
+              <motion.div 
+                className="flex gap-8 pt-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5" style={{ color: '#20A277' }} />
                   <div>
@@ -78,10 +112,10 @@ export default function Hero() {
                     <p className="text-sm font-medium" style={{ color: '#344256' }}>$2.3M+ Paid Out</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

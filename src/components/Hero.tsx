@@ -2,7 +2,7 @@ import { Search, Sparkles, Users, DollarSign } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative w-full px-8 py-6">
+    <section className="relative w-full px-10 py-6">
       {/* Container */}
       <div className="w-full mx-auto">
         {/* Hero Image with Rounded Corners */}

@@ -53,79 +53,76 @@ export default function KeyValue() {
     <section className="w-full py-20" style={{ backgroundColor: '#F5F5F5' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <h2 className="text-5xl font-bold text-center mb-16" style={{ color: '#344256' }}>
+        <h2 className="text-3xl font-bold text-center mb-16" style={{ color: '#344256' }}>
           Our Key Value
         </h2>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Earn Rewards - Left Side */}
-          <div className="space-y-8">
-            <div className="text-center lg:text-left">
+        {/* Centered Container with Stacked Layout */}
+        <div className="max-w-5xl mx-auto space-y-16">
+          {/* Earn Rewards Section */}
+          <div>
+            <div className="text-center mb-10">
               <h3 className="text-3xl font-bold" style={{ color: '#344256' }}>
                 Earn <span style={{ color: '#20A277' }}>Rewards</span>
               </h3>
               <p className="mt-2" style={{ color: '#344256' }}>For Users</p>
             </div>
 
-            <div className="relative">
-              {/* Center Circle */}
-              <div className="flex justify-center mb-8">
-                <div className="w-32 h-32 rounded-full shadow-lg" style={{ backgroundColor: '#20A277' }}></div>
-              </div>
-
-              {/* Feature Cards */}
-              <div className="space-y-4">
-                {earnRewards.map((feature, index) => (
-                  <div
-                    key={feature.title}
-                    className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4"
-                  >
-                    <div className={`w-12 h-12 ${feature.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                      <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+            {/* Feature Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {earnRewards.map((feature, index) => (
+                <div
+                  key={feature.title}
+                  className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className={`w-16 h-16 ${feature.iconBg} rounded-2xl flex items-center justify-center shadow-sm`}>
+                      <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-lg">{feature.title}</h4>
+                      <h4 className="font-semibold text-gray-900 text-lg mb-1">{feature.title}</h4>
                       <p className="text-sm text-gray-600 whitespace-pre-line">{feature.description}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Getting Growth - Right Side */}
-          <div className="space-y-8">
-            <div className="text-center lg:text-left">
+          {/* Divider */}
+          <div className="flex items-center justify-center">
+            <div className="h-px bg-gray-300 w-32"></div>
+            <div className="mx-4 w-3 h-3 rounded-full" style={{ backgroundColor: '#20A277' }}></div>
+            <div className="h-px bg-gray-300 w-32"></div>
+          </div>
+
+          {/* Getting Growth Section */}
+          <div>
+            <div className="text-center mb-10">
               <h3 className="text-3xl font-bold" style={{ color: '#344256' }}>
                 Getting <span style={{ color: '#2463EB' }}>Growth</span>
               </h3>
               <p className="mt-2" style={{ color: '#344256' }}>For Communities</p>
             </div>
 
-            <div className="relative">
-              {/* Center Circle */}
-              <div className="flex justify-center mb-8">
-                <div className="w-32 h-32 rounded-full shadow-lg" style={{ backgroundColor: '#20A277' }}></div>
-              </div>
-
-              {/* Feature Cards */}
-              <div className="space-y-4">
-                {gettingGrowth.map((feature, index) => (
-                  <div
-                    key={feature.title}
-                    className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4"
-                  >
-                    <div className={`w-12 h-12 ${feature.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                      <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+            {/* Feature Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {gettingGrowth.map((feature, index) => (
+                <div
+                  key={feature.title}
+                  className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className={`w-16 h-16 ${feature.iconBg} rounded-2xl flex items-center justify-center shadow-sm`}>
+                      <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-lg">{feature.title}</h4>
+                      <h4 className="font-semibold text-gray-900 text-lg mb-1">{feature.title}</h4>
                       <p className="text-sm text-gray-600">{feature.description}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

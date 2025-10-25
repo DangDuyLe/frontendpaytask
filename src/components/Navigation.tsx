@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase } from 'lucide-react';
 
 export default function Navigation() {
   return (
@@ -43,6 +43,63 @@ export default function Navigation() {
               style={{ backgroundColor: '#20A277' }}
             >
               Get Started
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+      {/* Secondary Navigation Bar */}
+      <div className="border-t border-gray-100" style={{ backgroundColor: '#F8F9FA' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 py-3 overflow-x-auto">
+            <Link 
+              href="/client-dashboard"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Client Dashboard
+            </Link>
+            <Link 
+              href="/worker-dashboard"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <Briefcase className="w-4 h-4" />
+              Worker Dashboard
+            </Link>
+            <Link 
+              href="/create-task"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Create Task
+            </Link>
+            <Link 
+              href="/discover-tasks"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <Compass className="w-4 h-4" />
+              Discover Tasks
+            </Link>
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
+            <Link 
+              href="/login"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <User className="w-4 h-4" />
+              Login
+            </Link>
+            <Link 
+              href="/signup"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
+              style={{ color: '#344256' }}
+            >
+              <UserPlus className="w-4 h-4" />
+              Sign Up
             </Link>
           </div>
         </div>

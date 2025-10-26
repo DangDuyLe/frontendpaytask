@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ import {
   Calendar
 } from "lucide-react";
 
-export default function TaskDetail() {
+function TaskDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -519,6 +519,24 @@ export default function TaskDetail() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function TaskDetail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 bg-secondary">
+          <div className="container mx-auto px-6 py-8 max-w-7xl">
+            <div className="text-center py-12">Loading task details...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <TaskDetailContent />
+    </Suspense>
   );
 };
 

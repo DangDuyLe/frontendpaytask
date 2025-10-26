@@ -275,17 +275,7 @@ export default function CTASection() {
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
                 whileHover={{ scale: 1.1, y: -5 }}
               >
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ 
-                    duration: 20, 
-                    repeat: Infinity, 
-                    ease: 'linear',
-                    delay: index * 2 
-                  }}
-                >
-                  <indicator.icon className="w-5 h-5" />
-                </motion.div>
+                <indicator.icon className="w-5 h-5" />
                 <motion.span 
                   className="text-sm font-medium"
                   whileHover={{ textShadow: '0 0 8px rgba(255,255,255,0.8)' }}

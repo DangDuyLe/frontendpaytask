@@ -16,12 +16,12 @@ export default function CreateTask() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [reward, setReward] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [qty, setQty] = useState("");
   const [deadline, setDeadline] = useState("");
 
   const platformFeeRate = 0.05; // 5%
   const rewardNum = parseFloat(reward) || 0;
-  const quantityNum = parseInt(quantity) || 0;
+  const quantityNum = parseInt(qty) || 0;
   const totalReward = rewardNum * quantityNum;
   const platformFee = totalReward * platformFeeRate;
   const totalBudget = totalReward + platformFee;
@@ -126,8 +126,8 @@ export default function CreateTask() {
                           min="1"
                           max="10000"
                           placeholder="100"
-                          value={quantity}
-                          onChange={(e) => setQuantity(e.target.value)}
+                          value={qty}
+                          onChange={(e) => setQty(e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">Min: 1, Max: 10,000</p>
                       </div>
@@ -220,3 +220,5 @@ export default function CreateTask() {
     </div>
   );
 }
+
+

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Plus, FileText, Clock, CheckCircle, DollarSign, Eye, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const mockTasks = [
   {
@@ -19,6 +20,11 @@ const mockTasks = [
     total: 1000,
     reward: 0.50,
     pendingReview: 12,
+    quantities: [
+      { qtyId: "qty-review-1", workerId: "worker-123", workerName: "John Doe", status: "in_review" },
+      { qtyId: "qty-2", workerId: "worker-124", workerName: "Jane Smith", status: "completed" },
+      { qtyId: "qty-3", workerId: "worker-125", workerName: "Bob Wilson", status: "in_progress" },
+    ]
   },
   {
     id: "2",
@@ -29,6 +35,9 @@ const mockTasks = [
     total: 500,
     reward: 0.75,
     pendingReview: 8,
+    quantities: [
+      { qtyId: "qty-review-4", workerId: "worker-126", workerName: "Alice Johnson", status: "in_review" },
+    ]
   },
   {
     id: "3",
@@ -39,10 +48,12 @@ const mockTasks = [
     total: 2000,
     reward: 0.30,
     pendingReview: 0,
+    quantities: []
   },
 ];
 
 export default function ClientDashboard() {
+  const router = useRouter();
   const totalSpent = 486.50;
   const activeTasks = 2;
   const totalCompletions = 942;
@@ -53,7 +64,7 @@ export default function ClientDashboard() {
       <Navigation />
       
       <main className="flex-1 bg-secondary">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -135,46 +146,108 @@ export default function ClientDashboard() {
                   {mockTasks.map((task) => (
                     <Card key={task.id}>
                       <CardContent className="pt-6">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {task.status === "open" && (
-                                <Badge className="bg-accent/10 text-accent">Open</Badge>
-                              )}
-                              {task.status === "in_progress" && (
-                                <Badge className="bg-info/10 text-info">In Progress</Badge>
-                              )}
-                              {task.status === "draft" && (
-                                <Badge variant="outline">Draft</Badge>
-                              )}
-                              <span className="text-sm text-muted-foreground">{task.created}</span>
+                        <div className="space-y-4">
+                          {/* Task Header */}
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                {task.status === "open" && (
+                                  <Badge className="bg-accent/10 text-accent">Open</Badge>
+                                )}
+                                {task.status === "in_progress" && (
+                                  <Badge className="bg-info/10 text-info">In Progress</Badge>
+                                )}
+                                {task.status === "draft" && (
+                                  <Badge variant="outline">Draft</Badge>
+                                )}
+                                <span className="text-sm text-muted-foreground">{task.created}</span>
+                              </div>
+                              <h3 className="text-lg font-semibold mb-2">{task.title}</h3>
+                              <div className="grid md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground">Progress</p>
+                                  <p className="font-medium">{task.completed} / {task.total}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Reward</p>
+                                  <p className="font-medium">${task.reward}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Pending Review</p>
+                                  <p className="font-medium">{task.pendingReview}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Total Cost</p>
+                                  <p className="font-medium">${(task.completed * task.reward).toFixed(2)}</p>
+                                </div>
+                              </div>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">{task.title}</h3>
-                            <div className="grid md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <p className="text-muted-foreground">Progress</p>
-                                <p className="font-medium">{task.completed} / {task.total}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Reward</p>
-                                <p className="font-medium">${task.reward}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Pending Review</p>
-                                <p className="font-medium">{task.pendingReview}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Total Cost</p>
-                                <p className="font-medium">${(task.completed * task.reward).toFixed(2)}</p>
-                              </div>
+                            <div className="ml-4 flex gap-2">
+                              <Button 
+                                variant="outline"
+                                onClick={() => router.push(`/task-detail?id=${task.id}&role=client`)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </Button>
                             </div>
                           </div>
-                          <div className="ml-4 flex gap-2">
-                            {task.pendingReview > 0 && (
-                              <Button variant="outline">Review Submissions</Button>
-                            )}
-                            <Button variant="ghost">View Details</Button>
-                          </div>
+
+                          {/* Active Quantities/Workers */}
+                          {task.quantities && task.quantities.length > 0 && (
+                            <div className="border-t pt-4">
+                              <h4 className="text-sm font-semibold mb-3 text-muted-foreground">
+                                Active Workers ({task.quantities.length})
+                              </h4>
+                              <div className="space-y-2">
+                                {task.quantities.slice(0, 3).map((qty) => (
+                                  <div 
+                                    key={qty.qtyId}
+                                    className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div>
+                                        <p className="text-sm font-medium">{qty.workerName}</p>
+                                        <p className="text-xs text-muted-foreground">Qty ID: {qty.qtyId}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge 
+                                        variant="outline" 
+                                        className={
+                                          qty.status === "completed" ? "bg-accent/10 text-accent" :
+                                          qty.status === "in_review" ? "bg-warning/10 text-warning" :
+                                          "bg-info/10 text-info"
+                                        }
+                                      >
+                                        {qty.status.replace(/_/g, " ")}
+                                      </Badge>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          router.push(`/task-flow/${task.id}/${qty.qtyId}?role=client`);
+                                        }}
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                                {task.quantities.length > 3 && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="w-full"
+                                    onClick={() => router.push(`/task-detail?id=${task.id}&role=client`)}
+                                  >
+                                    View all {task.quantities.length} workers
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -190,3 +263,5 @@ export default function ClientDashboard() {
     </div>
   );
 }
+
+

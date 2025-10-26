@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mail, Wallet, Briefcase, User } from "lucide-react";
+import { Mail, Briefcase, User } from "lucide-react";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -22,10 +21,6 @@ export default function Signup() {
     } else {
       console.log("Signup with email:", email, "role:", role);
     }
-  };
-
-  const handleWalletSignup = () => {
-    console.log("Signup with wallet, role:", role);
   };
 
   return (
@@ -70,74 +65,51 @@ export default function Signup() {
               </RadioGroup>
             </div>
 
-            <Tabs defaultValue="email" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="email">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Email
-                </TabsTrigger>
-                <TabsTrigger value="wallet">
-                  <Wallet className="mr-2 h-4 w-4" />
-                  Wallet
-                </TabsTrigger>
-              </TabsList>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
 
-              <TabsContent value="email" className="space-y-4">
+              {otpSent && (
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="otp">Verification Code</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="otp"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
                   />
-                </div>
-
-                {otpSent && (
-                  <div className="space-y-2">
-                    <Label htmlFor="otp">Verification Code</Label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="Enter 6-digit code"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      maxLength={6}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Check your email for the verification code
-                    </p>
-                  </div>
-                )}
-
-                <Button onClick={handleEmailSignup} className="w-full">
-                  {otpSent ? "Verify & Create Account" : "Send Verification Code"}
-                </Button>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
-                  <Link href="/login" className="text-primary hover:underline">
-                    Sign in
-                  </Link>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="wallet" className="space-y-4">
-                <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Connect your Web3 wallet to create an account instantly
+                  <p className="text-xs text-muted-foreground">
+                    Check your email for the verification code
                   </p>
-                  <Button onClick={handleWalletSignup} className="w-full">
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Connect Wallet
-                  </Button>
                 </div>
-              </TabsContent>
-            </Tabs>
+              )}
+
+              <Button onClick={handleEmailSignup} className="w-full">
+                {otpSent ? "Verify & Create Account" : "Send Verification Code"}
+              </Button>
+
+              <div className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:underline">
+                  Sign in
+                </Link>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+

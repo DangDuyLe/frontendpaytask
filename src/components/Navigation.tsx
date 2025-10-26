@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase, Menu, X } from 'lucide-react';
+import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase, Menu, X, Bell, Wallet, Settings, Shield, HelpCircle, FileText, ClipboardCheck } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState } from 'react';
 
@@ -172,14 +172,24 @@ export default function Navigation() {
             {[
               { href: '/client-dashboard', icon: LayoutDashboard, label: 'Client Dashboard' },
               { href: '/worker-dashboard', icon: Briefcase, label: 'Worker Dashboard' },
+              { href: '/admin-dashboard', icon: Shield, label: 'Admin Dashboard' },
+              { divider: true },
               { href: '/create-task', icon: PlusCircle, label: 'Create Task' },
               { href: '/discover-tasks', icon: Compass, label: 'Discover Tasks' },
+              { href: '/task-detail', icon: FileText, label: 'Task Detail' },
+              { divider: true },
+              { href: '/notifications', icon: Bell, label: 'Notifications' },
+              { href: '/wallet', icon: Wallet, label: 'Wallet' },
+              { divider: true },
+              { href: '/profile', icon: User, label: 'Profile' },
+              { href: '/settings', icon: Settings, label: 'Settings' },
+              { href: '/support', icon: HelpCircle, label: 'Support' },
               { divider: true },
               { href: '/login', icon: User, label: 'Login' },
               { href: '/signup', icon: UserPlus, label: 'Sign Up' },
             ].map((item, index) => {
               if (item.divider) {
-                return <div key="divider" className="h-6 w-px bg-gray-300 mx-2"></div>;
+                return <div key={`divider-${index}`} className="h-6 w-px bg-gray-300 mx-2"></div>;
               }
               return (
                 <motion.div

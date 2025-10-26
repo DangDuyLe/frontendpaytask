@@ -6,11 +6,14 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, DollarSign, TrendingUp, Clock, Award } from "lucide-react";
+import { Search, DollarSign, TrendingUp, Clock, Award, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const mockAssignments = [
   {
     id: "1",
+    taskId: "task-1",
+    qtyId: "qty-1",
     title: "Label images for AI training",
     status: "in_progress",
     progress: 23,
@@ -21,6 +24,8 @@ const mockAssignments = [
   },
   {
     id: "2",
+    taskId: "task-2",
+    qtyId: "qty-4",
     title: "Product review moderation",
     status: "pending_review",
     progress: 30,
@@ -32,6 +37,7 @@ const mockAssignments = [
 ];
 
 export default function WorkerDashboard() {
+  const router = useRouter();
   const totalEarnings = 284.75;
   const completedTasks = 896;
   const activeAssignments = 2;
@@ -42,7 +48,7 @@ export default function WorkerDashboard() {
       <Navigation />
       
       <main className="flex-1 bg-secondary">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -113,7 +119,11 @@ export default function WorkerDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {mockAssignments.map((assignment) => (
-                <Card key={assignment.id}>
+                <Card 
+                  key={assignment.id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => router.push(`/task-flow/${assignment.taskId}/${assignment.qtyId}`)}
+                >
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -126,7 +136,10 @@ export default function WorkerDashboard() {
                           )}
                           <span className="text-sm text-muted-foreground">{assignment.client}</span>
                         </div>
-                        <h3 className="text-lg font-semibold mb-3">{assignment.title}</h3>
+                        <div className="flex items-center gap-2 mb-3">
+                          <h3 className="text-lg font-semibold">{assignment.title}</h3>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                        </div>
                         <div className="grid md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <p className="text-muted-foreground">Progress</p>
@@ -147,13 +160,9 @@ export default function WorkerDashboard() {
                             <p className="font-medium">{assignment.deadline}</p>
                           </div>
                         </div>
-                      </div>
-                      <div className="ml-4">
-                        {assignment.status === "in_progress" ? (
-                          <Button>Continue Work</Button>
-                        ) : (
-                          <Button variant="outline">View Status</Button>
-                        )}
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          Qty ID: {assignment.qtyId} • Task ID: {assignment.taskId}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -240,3 +249,5 @@ export default function WorkerDashboard() {
     </div>
   );
 }
+
+

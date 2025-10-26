@@ -233,12 +233,7 @@ export default function SupportedEcosystem() {
               boxShadow: { duration: 1.5, repeat: Infinity },
             }}
           >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-            >
-              <Wallet className="w-4 h-4" />
-            </motion.div>
+            <Wallet className="w-4 h-4" />
             <span>Web3 Integration</span>
           </motion.div>
         </motion.div>

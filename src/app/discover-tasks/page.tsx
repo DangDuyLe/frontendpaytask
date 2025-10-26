@@ -71,7 +71,7 @@ export default function DiscoverTasks() {
       <Navigation />
       
       <main className="flex-1 bg-secondary">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Discover Tasks</h1>
@@ -215,3 +215,5 @@ export default function DiscoverTasks() {
     </div>
   );
 }
+
+

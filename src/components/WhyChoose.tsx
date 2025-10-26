@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 // Count Up Animation Component
 function CountUpStat({ endValue, duration = 2 }: { endValue: string; duration?: number }) {
   const [count, setCount] = useState(0);
-  const nodeRef = useRef<HTMLDivElement>(null);
+  const nodeRef = useRef<HTMLSpanElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ function CountUpStat({ endValue, duration = 2 }: { endValue: string; duration?: 
     ? `${Math.floor(count)}%`
     : `$${Math.floor(count)}`;
 
-  return <div ref={nodeRef}>{displayValue}</div>;
+  return <span ref={nodeRef}>{displayValue}</span>;
 }
 
 // Floating Feature Card

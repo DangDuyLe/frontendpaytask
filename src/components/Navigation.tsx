@@ -1,117 +1,215 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase, Menu, X } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState } from 'react';
 
 export default function Navigation() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
+  
+  // Create parallax effect for navbar background
+  const navBackground = useTransform(
+    scrollY,
+    [0, 100],
+    ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 1)']
+  );
+  
+  const navShadow = useTransform(
+    scrollY,
+    [0, 100],
+    ['0px 1px 2px rgba(0, 0, 0, 0.05)', '0px 4px 12px rgba(0, 0, 0, 0.1)']
+  );
+
   return (
     <motion.nav 
-      className="w-full bg-white border-b border-gray-100"
+      className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-md"
+      style={{
+        backgroundColor: navBackground,
+        boxShadow: navShadow,
+      }}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#20A277' }}>
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-xl font-semibold" style={{ color: '#344256' }}>PayTask</span>
-          </Link>
+          {/* Logo with Bounce Animation */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link href="/" className="flex items-center gap-2">
+              <img 
+                src="/logo.png" 
+                alt="PayTask Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <motion.span 
+                className="text-xl font-semibold" 
+                style={{ color: '#344256' }}
+                whileHover={{ color: '#20A277' }}
+                transition={{ duration: 0.3 }}
+              >
+                PayTask
+              </motion.span>
+            </Link>
+          </motion.div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links with Underline Animation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium" style={{ color: '#344256' }}>
-              How It Works
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium" style={{ color: '#344256' }}>
-              Categories
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium" style={{ color: '#344256' }}>
-              Pricing
-            </Link>
+            {['How It Works', 'Categories', 'Pricing'].map((item, index) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
+              >
+                <Link 
+                  href="#" 
+                  className="relative text-sm font-medium group" 
+                  style={{ color: '#344256' }}
+                >
+                  <motion.span
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2 }}
+                    className="inline-block"
+                  >
+                    {item}
+                  </motion.span>
+                  <motion.div
+                    className="absolute bottom-0 left-0 w-full h-0.5 origin-left"
+                    style={{ backgroundColor: '#20A277' }}
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </Link>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Right Side Actions */}
+          {/* Right Side Actions with Stagger Animation */}
           <div className="flex items-center gap-4">
-            <Link href="/discover-tasks">
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                <Search className="w-5 h-5" style={{ color: '#344256' }} />
-              </button>
-            </Link>
-            <Link href="/login" className="text-sm font-medium" style={{ color: '#344256' }}>
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors hover:opacity-90"
-              style={{ backgroundColor: '#20A277' }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
             >
-              Get Started
-            </Link>
+              <Link href="/discover-tasks">
+                <motion.button 
+                  className="p-2 rounded-full relative group"
+                  whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: 'rgba(32, 162, 119, 0.1)',
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Search className="w-5 h-5" style={{ color: '#344256' }} />
+                </motion.button>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <Link href="/login">
+                <motion.span
+                  className="text-sm font-medium" 
+                  style={{ color: '#344256' }}
+                  whileHover={{ color: '#20A277', scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  Sign In
+                </motion.span>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <Link href="/signup">
+                <motion.button
+                  className="text-white px-6 py-2 rounded-lg text-sm font-medium relative overflow-hidden"
+                  style={{ backgroundColor: '#20A277' }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: '0 5px 15px rgba(32, 162, 119, 0.3)',
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0"
+                    whileHover={{ 
+                      x: ['-100%', '100%'],
+                      opacity: [0, 0.3, 0],
+                    }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <span className="relative z-10">Get Started</span>
+                </motion.button>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>
       
-      {/* Secondary Navigation Bar */}
-      <div className="border-t border-gray-100" style={{ backgroundColor: '#F8F9FA' }}>
+      {/* Secondary Navigation Bar with Slide Animation */}
+      <motion.div 
+        className="border-t border-gray-100" 
+        style={{ backgroundColor: '#F8F9FA' }}
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 py-3 overflow-x-auto">
-            <Link 
-              href="/client-dashboard"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              Client Dashboard
-            </Link>
-            <Link 
-              href="/worker-dashboard"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <Briefcase className="w-4 h-4" />
-              Worker Dashboard
-            </Link>
-            <Link 
-              href="/create-task"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <PlusCircle className="w-4 h-4" />
-              Create Task
-            </Link>
-            <Link 
-              href="/discover-tasks"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <Compass className="w-4 h-4" />
-              Discover Tasks
-            </Link>
-            <div className="h-6 w-px bg-gray-300 mx-2"></div>
-            <Link 
-              href="/login"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <User className="w-4 h-4" />
-              Login
-            </Link>
-            <Link 
-              href="/signup"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white whitespace-nowrap"
-              style={{ color: '#344256' }}
-            >
-              <UserPlus className="w-4 h-4" />
-              Sign Up
-            </Link>
+            {[
+              { href: '/client-dashboard', icon: LayoutDashboard, label: 'Client Dashboard' },
+              { href: '/worker-dashboard', icon: Briefcase, label: 'Worker Dashboard' },
+              { href: '/create-task', icon: PlusCircle, label: 'Create Task' },
+              { href: '/discover-tasks', icon: Compass, label: 'Discover Tasks' },
+              { divider: true },
+              { href: '/login', icon: User, label: 'Login' },
+              { href: '/signup', icon: UserPlus, label: 'Sign Up' },
+            ].map((item, index) => {
+              if (item.divider) {
+                return <div key="divider" className="h-6 w-px bg-gray-300 mx-2"></div>;
+              }
+              return (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
+                >
+                  <Link href={item.href || '#'}>
+                    <motion.div
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap"
+                      style={{ color: '#344256' }}
+                      whileHover={{ 
+                        backgroundColor: 'white',
+                        color: '#20A277',
+                        y: -2,
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item.icon && <item.icon className="w-4 h-4" />}
+                      {item.label}
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.nav>
   );
 }

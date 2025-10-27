@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Sparkles, Users, DollarSign } from 'lucide-react';
+import { Search, Sparkles, Lock, Globe } from 'lucide-react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -217,11 +217,11 @@ export default function Hero() {
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                   >
-                    <Users className="w-5 h-5" style={{ color: '#20A277' }} />
+                    <Lock className="w-5 h-5" style={{ color: '#20A277' }} />
                   </motion.div>
                   <div>
                     <p className="text-sm font-medium" style={{ color: '#344256' }}>
-                      <AnimatedCounter value="15K" />+ Active Workers
+                      Verified Payments
                     </p>
                   </div>
                 </motion.div>
@@ -233,11 +233,11 @@ export default function Hero() {
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, delay: 0.5 }}
                   >
-                    <DollarSign className="w-5 h-5" style={{ color: '#20A277' }} />
+                    <Globe className="w-5 h-5" style={{ color: '#20A277' }} />
                   </motion.div>
                   <div>
                     <p className="text-sm font-medium" style={{ color: '#344256' }}>
-                      <AnimatedCounter value="$2.3M" />+ Paid Out
+                      Global Freelancer Network
                     </p>
                   </div>
                 </motion.div>

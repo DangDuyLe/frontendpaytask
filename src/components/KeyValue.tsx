@@ -307,11 +307,10 @@ export default function KeyValue() {
               transition={{ duration: 0.6 }}
             />
             <motion.div 
-              className="mx-4 w-3 h-3 rounded-full relative" 
-              style={{ backgroundColor: '#20A277' }}
+              className="mx-4 w-20 h-20 relative flex items-center justify-center" 
               animate={{
-                scale: [1, 1.3, 1],
-                rotate: [0, 180, 360],
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0],
               }}
               transition={{
                 duration: 3,
@@ -324,13 +323,19 @@ export default function KeyValue() {
                 className="absolute inset-0 rounded-full"
                 style={{ border: '2px solid #20A277' }}
                 animate={{
-                  scale: [1, 2, 2],
+                  scale: [1, 1.8, 1.8],
                   opacity: [0.8, 0, 0],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
                 }}
+              />
+              {/* Logo */}
+              <img 
+                src="/logo.png" 
+                alt="PayTask Logo" 
+                className="w-16 h-16 object-contain relative z-10"
               />
             </motion.div>
             <motion.div 

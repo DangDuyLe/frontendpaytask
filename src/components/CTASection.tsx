@@ -110,7 +110,7 @@ export default function CTASection() {
   const trustIndicators = [
     {
       icon: Star,
-      text: '4.9/5 Average Rating',
+      text: 'Human-Verified Tasks',
     },
     {
       icon: ShieldCheck,
@@ -199,15 +199,7 @@ export default function CTASection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Join{' '}
-            <motion.span 
-              className="font-bold text-white inline-block"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              15,000+ workers
-            </motion.span>
-            {' '}and clients transforming how work gets done
+            Join the next generation of freelancers and creators redefining work on Web3
           </motion.p>
 
           {/* CTA Buttons with Advanced Hover */}

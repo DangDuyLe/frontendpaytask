@@ -266,11 +266,41 @@ export default function SupportedEcosystem() {
           ))}
         </motion.h2>
 
-        {/* Wallet Grid with Staggered Animation */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-5xl mx-auto">
-          {wallets.map((wallet, index) => (
-            <WalletCard key={wallet.name} wallet={wallet} index={index} />
-          ))}
+        {/* Wallet Grid with Infinite Loop Animation */}
+        <div className="relative overflow-hidden py-8">
+          <motion.div 
+            className="flex gap-6"
+            animate={{
+              x: [0, -100 * wallets.length],
+            }}
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: "loop",
+                duration: 20,
+                ease: "linear",
+              },
+            }}
+          >
+            {/* First set of wallets */}
+            {wallets.map((wallet, index) => (
+              <div key={`wallet-1-${wallet.name}`} className="flex-shrink-0 w-[140px]">
+                <WalletCard wallet={wallet} index={index} />
+              </div>
+            ))}
+            {/* Duplicate set for seamless loop */}
+            {wallets.map((wallet, index) => (
+              <div key={`wallet-2-${wallet.name}`} className="flex-shrink-0 w-[140px]">
+                <WalletCard wallet={wallet} index={index} />
+              </div>
+            ))}
+            {/* Third set for extra smooth transition */}
+            {wallets.map((wallet, index) => (
+              <div key={`wallet-3-${wallet.name}`} className="flex-shrink-0 w-[140px]">
+                <WalletCard wallet={wallet} index={index} />
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* Floating Connection Lines */}

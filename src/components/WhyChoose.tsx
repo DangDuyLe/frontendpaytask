@@ -36,10 +36,14 @@ function CountUpStat({ endValue, duration = 2 }: { endValue: string; duration?: 
     return () => observer.disconnect();
   }, [endValue, duration, hasAnimated]);
 
-  const displayValue = endValue.includes('M') 
-    ? `$${count.toFixed(1)}M+`
+  const displayValue = endValue.includes('+')
+    ? `${Math.floor(count)}+`
     : endValue.includes('%')
     ? `${Math.floor(count)}%`
+    : endValue.includes('<')
+    ? `< ${Math.floor(count)}`
+    : endValue.includes('M') 
+    ? `$${count.toFixed(1)}M+`
     : `$${Math.floor(count)}`;
 
   return <span ref={nodeRef}>{displayValue}</span>;
@@ -203,19 +207,21 @@ export default function WhyChoose() {
 
   const stats = [
     {
-      label: 'Market Size',
-      value: '$2.1M',
-      subtitle: 'Total paid out',
+      label: 'Global Access',
+      value: '120+',
+      subtitle: 'Regions',
+      description: '96% of the anytime with stablecoin payments',
     },
     {
-      label: 'Avg Payout',
-      value: '$47',
-      subtitle: 'Per task',
+      label: 'Avg Completion Time',
+      value: '< 1',
+      subtitle: 'Hour',
+      description: 'From task started to payment received',
     },
     {
       label: 'Platform Fee',
-      value: '5%',
-      subtitle: 'Industry lowest',
+      value: '3%',
+      subtitle: 'Industry\'s lowest',
     },
   ];
 
@@ -308,7 +314,7 @@ export default function WhyChoose() {
                 </motion.p>
                 
                 <motion.p 
-                  className="text-sm" 
+                  className="text-sm font-semibold mb-2" 
                   style={{ color: '#344256' }}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -317,6 +323,19 @@ export default function WhyChoose() {
                 >
                   {stat.subtitle}
                 </motion.p>
+
+                {stat.description && (
+                  <motion.p 
+                    className="text-xs" 
+                    style={{ color: '#344256', opacity: 0.7 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 0.7, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.15 + 0.6 }}
+                  >
+                    {stat.description}
+                  </motion.p>
+                )}
               </div>
             </motion.div>
           ))}

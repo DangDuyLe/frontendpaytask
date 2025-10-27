@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [secondaryNavOpen, setSecondaryNavOpen] = useState(true);
   const { scrollY } = useScroll();
   
   // Create parallax effect for navbar background
@@ -155,18 +156,41 @@ export default function Navigation() {
                 </motion.button>
               </Link>
             </motion.div>
+
+            {/* Toggle Secondary Nav Button */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <motion.button
+                onClick={() => setSecondaryNavOpen(!secondaryNavOpen)}
+                className="p-2 rounded-lg relative group"
+                style={{ backgroundColor: secondaryNavOpen ? 'rgba(32, 162, 119, 0.1)' : 'transparent' }}
+                whileHover={{ 
+                  scale: 1.1,
+                  backgroundColor: 'rgba(32, 162, 119, 0.15)',
+                }}
+                whileTap={{ scale: 0.9 }}
+                title={secondaryNavOpen ? "Hide menu" : "Show menu"}
+              >
+                <Menu className="w-5 h-5" style={{ color: secondaryNavOpen ? '#20A277' : '#344256' }} />
+              </motion.button>
+            </motion.div>
           </div>
         </div>
       </div>
       
       {/* Secondary Navigation Bar with Slide Animation */}
-      <motion.div 
-        className="border-t border-gray-100" 
-        style={{ backgroundColor: '#F8F9FA' }}
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: 'auto' }}
-        transition={{ duration: 0.4, delay: 0.6 }}
-      >
+      {secondaryNavOpen && (
+        <motion.div 
+          className="border-t border-gray-100" 
+          style={{ backgroundColor: '#F8F9FA' }}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+        >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 py-3 overflow-x-auto">
             {[
@@ -220,6 +244,7 @@ export default function Navigation() {
           </div>
         </div>
       </motion.div>
+      )}
     </motion.nav>
   );
 }

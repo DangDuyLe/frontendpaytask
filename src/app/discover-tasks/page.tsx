@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, DollarSign, Clock, Users, Filter } from "lucide-react";
+import { Search, DollarSign, Clock, Users, Filter, Eye } from "lucide-react";
 
 const mockTasks = [
   {
@@ -62,6 +63,7 @@ const mockTasks = [
 ];
 
 export default function DiscoverTasks() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
@@ -182,7 +184,16 @@ export default function DiscoverTasks() {
                       <CardTitle className="text-xl mb-2">{task.title}</CardTitle>
                       <CardDescription>{task.description}</CardDescription>
                     </div>
-                    <Button className="ml-4">Accept Task</Button>
+                    <div className="ml-4 flex flex-col gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => router.push(`/task-detail?id=${task.id}&role=worker`)}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Detail
+                      </Button>
+                      <Button>Accept Task</Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

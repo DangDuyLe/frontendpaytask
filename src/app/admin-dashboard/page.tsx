@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-import { Users, DollarSign, AlertTriangle, Shield, TrendingUp, FileText } from "lucide-react";
+import { Users, DollarSign, AlertTriangle, TrendingUp, FileText } from "lucide-react";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -26,15 +26,8 @@ export default function AdminDashboard() {
     activeTasks: 1234,
     totalVolume: 234567,
     platformFees: 11728,
-    pendingKYC: 47,
     openDisputes: 12
   };
-
-  const pendingKYC = [
-    { id: "KYC-001", userId: "user-123", name: "John Doe", submittedAt: "2025-10-26T10:00:00", documents: 3 },
-    { id: "KYC-002", userId: "user-456", name: "Jane Smith", submittedAt: "2025-10-26T09:30:00", documents: 3 },
-    { id: "KYC-003", userId: "user-789", name: "Bob Johnson", submittedAt: "2025-10-25T18:00:00", documents: 3 }
-  ];
 
   const disputes = [
     { 
@@ -132,21 +125,17 @@ export default function AdminDashboard() {
                 <AlertTriangle className="h-4 w-4 text-warning" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.pendingKYC + stats.openDisputes}</div>
+                <div className="text-2xl font-bold">{stats.openDisputes}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.pendingKYC} KYC • {stats.openDisputes} disputes
+                  {stats.openDisputes} open disputes
                 </p>
               </CardContent>
             </Card>
           </div>
 
           {/* Management Tabs */}
-          <Tabs defaultValue="kyc" className="space-y-6">
+          <Tabs defaultValue="disputes" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="kyc">
-                <Shield className="h-4 w-4 mr-2" />
-                KYC ({stats.pendingKYC})
-              </TabsTrigger>
               <TabsTrigger value="disputes">
                 <AlertTriangle className="h-4 w-4 mr-2" />
                 Disputes ({stats.openDisputes})
@@ -155,57 +144,7 @@ export default function AdminDashboard() {
                 <FileText className="h-4 w-4 mr-2" />
                 Audit Log
               </TabsTrigger>
-              <TabsTrigger value="settings">
-                Settings
-              </TabsTrigger>
             </TabsList>
-
-            {/* KYC Tab */}
-            <TabsContent value="kyc">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pending KYC Verifications</CardTitle>
-                  <CardDescription>Review and approve user identity documents</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Submitted</TableHead>
-                        <TableHead>Documents</TableHead>
-                        <TableHead></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingKYC.map((kyc) => (
-                        <TableRow key={kyc.id}>
-                          <TableCell className="font-mono text-sm">{kyc.id}</TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{kyc.name}</div>
-                              <div className="text-sm text-muted-foreground">{kyc.userId}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(kyc.submittedAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{kyc.documents} files</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="default">Review</Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Disputes Tab */}
             <TabsContent value="disputes">
@@ -288,41 +227,6 @@ export default function AdminDashboard() {
                   </Table>
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            {/* Settings Tab */}
-            <TabsContent value="settings">
-              <div className="grid gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Platform Policies</CardTitle>
-                    <CardDescription>Configure platform-wide settings</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">Platform Fee</div>
-                        <div className="text-sm text-muted-foreground">Current: 5%</div>
-                      </div>
-                      <Button variant="outline">Update</Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">KYC Threshold</div>
-                        <div className="text-sm text-muted-foreground">Current: $100</div>
-                      </div>
-                      <Button variant="outline">Update</Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">Review SLA</div>
-                        <div className="text-sm text-muted-foreground">Current: 48 hours</div>
-                      </div>
-                      <Button variant="outline">Update</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </TabsContent>
           </Tabs>
         </div>

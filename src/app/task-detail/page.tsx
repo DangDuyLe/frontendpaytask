@@ -362,7 +362,7 @@ function TaskDetailContent() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => router.push(`/task-flow/${task.id}/${qty.qtyId}`)}
+                                  onClick={() => router.push(`/task-flow/${task.id}/${qty.qtyId}?role=client`)}
                                 >
                                   <Eye className="mr-1 h-3 w-3" />
                                   View

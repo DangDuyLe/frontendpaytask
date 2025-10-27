@@ -230,7 +230,7 @@ export default function ClientDashboard() {
                                           router.push(`/task-flow/${task.id}/${qty.qtyId}?role=client`);
                                         }}
                                       >
-                                        <ExternalLink className="h-4 w-4" />
+                                        View
                                       </Button>
                                     </div>
                                   </div>

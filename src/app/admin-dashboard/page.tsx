@@ -185,7 +185,12 @@ export default function AdminDashboard() {
                             {new Date(dispute.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Button size="sm">Review</Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => router.push(`/admin-dashboard/dispute/${dispute.id}`)}
+                            >
+                              Review
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

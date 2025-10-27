@@ -208,7 +208,11 @@ export default function Support() {
                 </Card>
               ) : (
                 tickets.map((ticket) => (
-                  <Card key={ticket.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <Card 
+                    key={ticket.id} 
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => router.push(`/support/ticket/${ticket.id}`)}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">

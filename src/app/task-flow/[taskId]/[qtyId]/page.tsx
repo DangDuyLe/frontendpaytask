@@ -20,7 +20,6 @@ import {
   AlertCircle, 
   FileText, 
   Upload,
-  MessageSquare,
   User,
   Calendar,
   ArrowRight,
@@ -206,7 +205,6 @@ export default function TaskFlowDetail() {
   // Auto-detect role based on user session (mock for now)
   const [userRole, setUserRole] = useState<"client" | "worker">(roleParam || "worker");
   
-  const [newComment, setNewComment] = useState("");
   const [reviewDecision, setReviewDecision] = useState<"approve" | "revision" | "reject" | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   
@@ -233,13 +231,6 @@ export default function TaskFlowDetail() {
       setUserRole("client");
     }
   }, [roleParam, taskFlow.submission, taskFlow.status]);
-
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      console.log("Adding comment:", newComment);
-      setNewComment("");
-    }
-  };
 
   const handleReview = (decision: "approve" | "revision" | "reject") => {
     setReviewDecision(decision);
@@ -562,7 +553,7 @@ export default function TaskFlowDetail() {
 
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
+                        <FileText className="h-4 w-4" />
                         Worker Notes
                       </h4>
                       <p className="text-sm text-foreground bg-secondary/50 p-3 rounded-lg">
@@ -636,53 +627,6 @@ export default function TaskFlowDetail() {
                   </CardContent>
                 </Card>
               )}
-
-              {/* Comments */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Communication</CardTitle>
-                  <CardDescription>Messages between client and worker</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {taskFlow.comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={comment.avatar} />
-                          <AvatarFallback>{comment.author[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-sm">{comment.author}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {comment.authorRole}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(comment.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground">{comment.message}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-3">
-                    <Textarea
-                      placeholder="Add a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      rows={3}
-                    />
-                    <Button onClick={handleAddComment}>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Send Message
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Sidebar */}

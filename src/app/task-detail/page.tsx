@@ -41,7 +41,8 @@ import {
   RotateCcw,
   ArrowLeft,
   FileText,
-  Calendar
+  Calendar,
+  Wallet
 } from "lucide-react";
 
 function TaskDetailContent() {
@@ -49,12 +50,15 @@ function TaskDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const userRole = searchParams.get("role") || "worker"; // client or worker
+  const isDraft = searchParams.get("draft") === "true";
   
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState<any>(null);
   const [reviewingQty, setReviewingQty] = useState<string | null>(null);
   const [quickReviewDecision, setQuickReviewDecision] = useState<"approve" | "reject" | "revision" | null>(null);
   const [quickReviewNote, setQuickReviewNote] = useState("");
+  
+
 
   // Mock data - would come from API
   const task = {
@@ -118,6 +122,19 @@ function TaskDetailContent() {
     setQuickReviewNote("");
     // In real app: API call to submit review
   };
+
+  const handleFundTask = () => {
+    console.log("Funding task:", id, {
+      totalAmount: totalCost
+    });
+    // Handle funding logic here
+    router.push("/client-dashboard");
+  };
+
+  // Calculate costs
+  const totalTaskCost = task.quantity * task.reward;
+  const platformFee = totalTaskCost * 0.05;
+  const totalCost = totalTaskCost + platformFee;
 
   const confirmQuickAccept = () => {
     // API call to accept
@@ -477,6 +494,63 @@ function TaskDetailContent() {
                 </Card>
               )}
             </>
+          )}
+
+          {/* Funding Section (Draft Tasks - Client View) */}
+          {userRole === "client" && isDraft && (
+            <Card className="border-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-primary" />
+                  Fund Task
+                </CardTitle>
+                <CardDescription>Review cost and publish your task</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Cost Summary */}
+                <div className="bg-secondary/50 p-6 rounded-lg space-y-3">
+                  <h3 className="font-semibold mb-3">Cost Breakdown</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Task Cost ({task.quantity} × ${task.reward})</span>
+                      <span className="font-medium">${totalTaskCost.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Platform Fee (5%)</span>
+                      <span className="font-medium">${platformFee.toFixed(2)}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-lg font-semibold">Total Cost</span>
+                      <span className="text-3xl font-bold text-primary">${totalCost.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fund Button */}
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleFundTask} 
+                    className="flex-1 bg-primary hover:bg-primary/90"
+                    size="lg"
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Fund & Publish Task
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    onClick={() => router.push("/client-dashboard")}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  Your task will be published immediately after successful payment
+                </p>
+              </CardContent>
+            </Card>
           )}
 
           {/* Action Buttons (Worker View) */}

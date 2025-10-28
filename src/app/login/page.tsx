@@ -10,17 +10,11 @@ import { Mail } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [password, setPassword] = useState("");
 
-  const handleEmailLogin = () => {
-    if (!otpSent) {
-      // Send OTP
-      setOtpSent(true);
-    } else {
-      // Verify OTP and login
-      console.log("Login with email:", email, "OTP:", otp);
-    }
+  const handleLogin = () => {
+    console.log("Login with email:", email);
+    // Handle login logic here
   };
 
   return (
@@ -51,25 +45,19 @@ export default function Login() {
                 />
               </div>
 
-              {otpSent && (
-                <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    maxLength={6}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    We sent a code to {email}
-                  </p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
 
-              <Button onClick={handleEmailLogin} className="w-full">
-                {otpSent ? "Verify & Sign In" : "Send Code"}
+              <Button onClick={handleLogin} className="w-full">
+                Sign In
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">

@@ -10,17 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Briefcase, User } from "lucide-react";
 
 export default function Signup() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"client" | "worker">("worker");
 
-  const handleEmailSignup = () => {
-    if (!otpSent) {
-      setOtpSent(true);
-    } else {
-      console.log("Signup with email:", email, "role:", role);
-    }
+  const handleSignup = () => {
+    console.log("Signup with username:", username, "email:", email, "role:", role);
+    // Handle signup logic here
   };
 
   return (
@@ -67,6 +64,17 @@ export default function Signup() {
 
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="johndoe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
@@ -77,25 +85,19 @@ export default function Signup() {
                 />
               </div>
 
-              {otpSent && (
-                <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    maxLength={6}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Check your email for the verification code
-                  </p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
 
-              <Button onClick={handleEmailSignup} className="w-full">
-                {otpSent ? "Verify & Create Account" : "Send Verification Code"}
+              <Button onClick={handleSignup} className="w-full">
+                Create Account
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">

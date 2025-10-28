@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Clock, CheckCircle, DollarSign, Eye, ExternalLink } from "lucide-react";
+import { Plus, FileText, Clock, CheckCircle, DollarSign, Eye, ExternalLink, Edit, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const mockTasks = [
@@ -183,13 +183,31 @@ export default function ClientDashboard() {
                               </div>
                             </div>
                             <div className="ml-4 flex gap-2">
-                              <Button 
-                                variant="outline"
-                                onClick={() => router.push(`/task-detail?id=${task.id}&role=client`)}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </Button>
+                              {task.status === "draft" ? (
+                                <>
+                                  <Button 
+                                    variant="outline"
+                                    onClick={() => router.push(`/update-task/${task.id}`)}
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Update
+                                  </Button>
+                                  <Button 
+                                    onClick={() => router.push(`/task-detail?id=${task.id}&role=client&draft=true`)}
+                                  >
+                                    <Wallet className="mr-2 h-4 w-4" />
+                                    Fund Task
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => router.push(`/task-detail?id=${task.id}&role=client`)}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </Button>
+                              )}
                             </div>
                           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
@@ -11,34 +11,129 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { tasksApi } from "@/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UpdateTask() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const taskId = params.taskId as string;
 
-  // Mock data - in real app, fetch based on taskId
-  const [title, setTitle] = useState("Data entry from receipts");
-  const [description, setDescription] = useState("Enter data from receipt images into a structured format");
-  const [category, setCategory] = useState("data-entry");
-  const [quantity, setQuantity] = useState("2000");
-  const [reward, setReward] = useState("0.30");
-  const [instructions, setInstructions] = useState("1. Review the receipt image\n2. Extract all relevant information\n3. Enter data accurately");
-  const [estimatedTime, setEstimatedTime] = useState("5");
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [reward, setReward] = useState("");
+  const [deadline, setDeadline] = useState("");
 
-  const handleUpdateTask = () => {
-    console.log("Updating task:", taskId, {
-      title,
-      description,
-      category,
-      quantity,
-      reward,
-      instructions,
-      estimatedTime
-    });
-    // Handle task update logic here
-    router.push("/client-dashboard");
+  // Fetch task data
+  useEffect(() => {
+    if (!taskId) return;
+
+    const fetchTask = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await tasksApi.getTaskById(taskId);
+        
+        if (response.success) {
+          const task = response.data;
+          setTitle(task.title || "");
+          setDescription(task.description || "");
+          setCategory(task.category || "");
+          setQuantity(task.qty?.toString() || "");
+          setReward(task.reward || "");
+          setDeadline(task.deadline || "");
+        }
+      } catch (err: any) {
+        console.error('Error fetching task:', err);
+        setError(err?.error?.message || 'Failed to load task. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTask();
+  }, [taskId]);
+
+  const handleUpdateTask = async () => {
+    // Validation
+    if (!title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Task title is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!description.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Task description is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const rewardNum = parseFloat(reward);
+    const quantityNum = parseInt(quantity);
+
+    if (isNaN(rewardNum) || rewardNum < 0.10) {
+      toast({
+        title: "Validation Error",
+        description: "Reward must be at least $0.10.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isNaN(quantityNum) || quantityNum < 1) {
+      toast({
+        title: "Validation Error",
+        description: "Quantity must be at least 1.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      
+      const response = await tasksApi.updateTaskDraft(taskId, {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        reward: rewardNum,
+        qty: quantityNum,
+        deadline: deadline || undefined,
+      });
+
+      if (response.success) {
+        toast({
+          title: "Task Updated!",
+          description: "Your task has been updated successfully.",
+        });
+        
+        router.push('/client-dashboard');
+      }
+    } catch (err: any) {
+      console.error('Error updating task:', err);
+      toast({
+        title: "Update Failed",
+        description: err?.error?.message || 'Failed to update task. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (
@@ -140,33 +235,17 @@ export default function UpdateTask() {
                 </div>
               </div>
 
-              {/* Estimated Time */}
+              {/* Deadline */}
               <div className="space-y-2">
-                <Label htmlFor="estimatedTime">Estimated Time (minutes) *</Label>
+                <Label htmlFor="deadline">Deadline</Label>
                 <Input
-                  id="estimatedTime"
-                  type="number"
-                  placeholder="e.g., 5"
-                  value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(e.target.value)}
+                  id="deadline"
+                  type="datetime-local"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Average time to complete one task
-                </p>
-              </div>
-
-              {/* Instructions */}
-              <div className="space-y-2">
-                <Label htmlFor="instructions">Task Instructions *</Label>
-                <Textarea
-                  id="instructions"
-                  placeholder="Provide detailed step-by-step instructions..."
-                  rows={6}
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Clear instructions help workers complete tasks correctly
+                  Optional deadline for task completion
                 </p>
               </div>
 
@@ -189,17 +268,32 @@ export default function UpdateTask() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Estimated Time:</span>
-                    <span className="ml-2 font-medium">{estimatedTime || 0} min</span>
+                    <span className="text-muted-foreground">Total Budget:</span>
+                    <span className="ml-2 font-medium text-accent">
+                      ${((parseFloat(reward) || 0) * (parseInt(quantity) || 0)).toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
-                <Button onClick={handleUpdateTask} className="flex-1">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button 
+                  onClick={handleUpdateTask} 
+                  className="flex-1"
+                  disabled={updating || loading}
+                >
+                  {updating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
                 <Button 
                   variant="outline" 

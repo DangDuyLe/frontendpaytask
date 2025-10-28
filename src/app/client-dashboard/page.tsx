@@ -11,9 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, FileText, Clock, CheckCircle, DollarSign, Eye, ExternalLink, Edit, Wallet, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { tasksApi, type Task } from "@/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ClientDashboard() {
   const router = useRouter();
+  const { userId, isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,31 +29,48 @@ export default function ClientDashboard() {
 
   // Fetch tasks from API
   useEffect(() => {
-    fetchTasks();
-  }, [activeTab]);
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (userId) {
+      fetchTasks();
+    }
+  }, [activeTab, userId, isAuthenticated]);
 
   const fetchTasks = async () => {
+    if (!userId) return; // Wait for userId to be available
+    
     try {
       setLoading(true);
       setError(null);
       
-      // Filter by status based on active tab
-      const statusFilter = activeTab === "all" ? undefined : activeTab;
-      
-      const response = await tasksApi.getMyTasks({
-        status: statusFilter,
+      // Build query params based on active tab
+      const queryParams: any = {
         page: 1,
         limit: 50,
-        sortBy: 'createdAt',
-        order: 'desc',
-        clientId: "4258a1a4-0f41-46aa-93ca-6823e68ab96d",
-      });
+        sortBy: 'createdAt' as const,
+        order: 'desc' as const,
+        clientId: userId,
+      };
+      
+      // Only add status filter if not "all"
+      if (activeTab !== "all") {
+        queryParams.status = activeTab;
+      }
+      
+      const response = await tasksApi.getMyTasks(queryParams);
 
       if (response.success) {
         setTasks(response.data.data);
         
         // Calculate stats from tasks
         const totalSpent = response.data.data.reduce((sum, task) => {
+          // Use budget field if available (total cost), otherwise calculate from reward
+          if (task.budget) {
+            return sum + parseFloat(task.budget);
+          }
+          // Fallback: calculate from completed assignments
           const completed = task._count?.assignments || 0;
           return sum + (completed * parseFloat(task.reward));
         }, 0);
@@ -304,7 +323,9 @@ export default function ClientDashboard() {
                                     </div>
                                     <div>
                                       <p className="text-muted-foreground">Total Cost</p>
-                                      <p className="font-medium">${(completed * reward).toFixed(2)}</p>
+                                      <p className="font-medium">
+                                        ${task.budget ? parseFloat(task.budget).toFixed(2) : '0.00'}
+                                      </p>
                                     </div>
                                   </div>
                                 </div>

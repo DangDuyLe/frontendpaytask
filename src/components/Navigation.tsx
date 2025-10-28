@@ -5,14 +5,14 @@ import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState } from 'react';
 import UserDropdown from './UserDropdown';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [secondaryNavOpen, setSecondaryNavOpen] = useState(true);
   
-  // Mock authentication state - replace with real auth later
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Set to true to see the dropdown
-  const [username, setUsername] = useState('JohnDoe'); // Mock username
+  // Use AuthContext instead of mock data
+  const { user, isAuthenticated, logout } = useAuth();
   
   const { scrollY } = useScroll();
   
@@ -29,10 +29,9 @@ export default function Navigation() {
     ['0px 1px 2px rgba(0, 0, 0, 0.05)', '0px 4px 12px rgba(0, 0, 0, 0.1)']
   );
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername('');
-    // Add your logout logic here (clear tokens, redirect, etc.)
+  const handleLogout = async () => {
+    await logout();
+    // Redirect will be handled by Navigation or you can add router.push('/login')
   };
 
   return (
@@ -125,13 +124,13 @@ export default function Navigation() {
             </motion.div>
 
             {/* Show User Dropdown if logged in, otherwise show Sign In / Get Started */}
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 }}
               >
-                <UserDropdown username={username} onLogout={handleLogout} />
+                <UserDropdown username={user?.username || user?.email || 'User'} onLogout={handleLogout} />
               </motion.div>
             ) : (
               <>

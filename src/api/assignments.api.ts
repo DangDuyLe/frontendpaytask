@@ -79,7 +79,7 @@ export const assignmentsApi = {
   acceptTask: async (data: AcceptTaskRequest): Promise<AcceptTaskResponse> => {
     return await apiFetch('/assignments/accept', {
       method: 'POST',
-      headers: getHeaders(),
+      headers: getHeaders(true), // ✅ Include auth token
       body: JSON.stringify(data),
     });
   },
@@ -100,16 +100,17 @@ export const assignmentsApi = {
     
     return await apiFetch(endpoint, {
       method: 'GET',
-      headers: getHeaders(),
+      headers: getHeaders(true), // ✅ Include auth token
     });
   },
 
   // GET /api/assignments/my-assignments
-  getMyAssignments: async (workerId?: string): Promise<MyAssignmentsResponse> => {
-    const params = workerId ? `?workerId=${workerId}` : '';
-    return await apiFetch(`/assignments/my-assignments${params}`, {
+  // Gets assignments for the authenticated user (workerId from JWT token)
+  getMyAssignments: async (userId?: string): Promise<MyAssignmentsResponse> => {
+    const params = userId ? `?workerId=${userId}` : '';
+    return await apiFetch(`/tasks/assignments/my-assignments${params}`, {
       method: 'GET',
-      headers: getHeaders(),
+      headers: getHeaders(true), // ✅ Include auth token
     });
   },
 };

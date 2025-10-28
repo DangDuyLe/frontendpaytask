@@ -39,6 +39,7 @@ export interface Task {
   category: string | null;
   reward: string;
   qty: number;
+  budget: string | null; // Total cost
   deadline: string | null;
   status: string;
   createdAt: string;
@@ -109,6 +110,7 @@ export const tasksApi = {
     return await apiFetch(`/tasks/${taskId}/publish`, {
       method: 'POST',
       headers: getHeaders(true),
+      body: JSON.stringify({ taskId: taskId}),
     });
   },
 

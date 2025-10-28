@@ -23,184 +23,41 @@ import {
   User,
   Calendar,
   ArrowRight,
-  Download
+  Download,
+  Loader2
 } from "lucide-react";
+import { assignmentsApi, tasksApi, submissionsApi } from "@/api";
+import type { Assignment, Submission } from "@/api";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock data - would come from API based on taskId and qtyId
-const getMockTaskFlow = (taskId: string, qtyId: string) => ({
-  id: `flow-${qtyId}`,
-  taskId: taskId,
-  taskTitle: "Verify Restaurant Menu Prices",
-  qtyId: qtyId,
-  workerId: "worker-123",
-  workerName: "John Doe",
-  workerAvatar: "/placeholder.svg",
-  clientId: "client-456",
-  clientName: "FoodieData Inc.",
-  clientAvatar: "/placeholder.svg",
-  quantityAmount: 50,
-  completed: 23,
-  reward: 5.00,
-  totalReward: 250.00, // 50 * 5.00
-  status: "in_progress", // assigned, in_progress, submitted, in_review, revision_requested, completed, rejected
-  createdAt: "2025-10-26T08:00:00",
-  acceptedAt: "2025-10-26T08:30:00",
-  startedAt: "2025-10-26T09:00:00",
-  submittedAt: null,
-  deadline: "2025-10-30T18:00:00",
-  
-  taskDescription: "Visit the restaurant and verify that all menu prices match our database. Take photos of the menu items and confirm pricing accuracy. Must be completed during business hours (11am-9pm).",
-  taskRequirements: [
-    "Must have a smartphone with camera",
-    "Must be located within 5km of restaurant", 
-    "Must complete during restaurant operating hours"
-  ],
-  
-  steps: [
-    {
-      id: 1,
-      name: "Task Assigned",
-      status: "completed",
-      timestamp: "2025-10-26T08:00:00",
-      description: "Task quantity assigned to worker"
-    },
-    {
-      id: 2,
-      name: "Accepted",
-      status: "completed",
-      timestamp: "2025-10-26T08:30:00",
-      description: "Worker accepted the task"
-    },
-    {
-      id: 3,
-      name: "In Progress",
-      status: "current",
-      timestamp: "2025-10-26T09:00:00",
-      description: "Worker is currently working"
-    },
-    {
-      id: 4,
-      name: "Submitted",
-      status: "pending",
-      timestamp: null,
-      description: "Work submitted for review"
-    },
-    {
-      id: 5,
-      name: "Under Review",
-      status: "pending",
-      timestamp: null,
-      description: "Client is reviewing the submission"
-    },
-    {
-      id: 6,
-      name: "Completed",
-      status: "pending",
-      timestamp: null,
-      description: "Task completed and payment released"
-    }
-  ],
-  
-  submission: null, // Will be populated when worker submits
-  
-  comments: [
-    {
-      id: 1,
-      author: "John Doe",
-      authorRole: "worker",
-      avatar: "/placeholder.svg",
-      message: "Started working on this task. Estimated completion in 4 hours.",
-      timestamp: "2025-10-26T09:00:00"
-    }
-  ]
-});
-
-// Mock submitted task flow
-const getMockSubmittedTaskFlow = (taskId: string, qtyId: string) => ({
-  ...getMockTaskFlow(taskId, qtyId),
-  status: "in_review",
-  submittedAt: "2025-10-26T14:00:00",
-  completed: 50,
-  steps: [
-    {
-      id: 1,
-      name: "Task Assigned",
-      status: "completed",
-      timestamp: "2025-10-26T08:00:00",
-      description: "Task quantity assigned to worker"
-    },
-    {
-      id: 2,
-      name: "Accepted",
-      status: "completed",
-      timestamp: "2025-10-26T08:30:00",
-      description: "Worker accepted the task"
-    },
-    {
-      id: 3,
-      name: "In Progress",
-      status: "completed",
-      timestamp: "2025-10-26T09:00:00",
-      description: "Worker started working"
-    },
-    {
-      id: 4,
-      name: "Submitted",
-      status: "completed",
-      timestamp: "2025-10-26T14:00:00",
-      description: "Work submitted for review"
-    },
-    {
-      id: 5,
-      name: "Under Review",
-      status: "current",
-      timestamp: null,
-      description: "Client is reviewing the submission"
-    },
-    {
-      id: 6,
-      name: "Completed",
-      status: "pending",
-      timestamp: null,
-      description: "Task completed and payment released"
-    }
-  ],
-  submission: {
-    files: [
-      { name: "image_labels_001.json", url: "#", type: "application/json", size: "24 KB" },
-      { name: "image_labels_002.json", url: "#", type: "application/json", size: "18 KB" },
-      { name: "verification_screenshots.zip", url: "#", type: "application/zip", size: "2.4 MB" }
-    ],
-    notes: "All 50 images have been labeled according to the specifications. I encountered some edge cases with image #23 and #47 where multiple objects were present - I've labeled all visible objects as requested.",
-    submittedAt: "2025-10-26T14:00:00"
-  },
-  comments: [
-    {
-      id: 1,
-      author: "John Doe",
-      authorRole: "worker",
-      avatar: "/placeholder.svg",
-      message: "Started working on this task. Estimated completion in 4 hours.",
-      timestamp: "2025-10-26T09:00:00"
-    },
-    {
-      id: 2,
-      author: "John Doe",
-      authorRole: "worker",
-      avatar: "/placeholder.svg",
-      message: "Work submitted. Please review the files.",
-      timestamp: "2025-10-26T14:00:00"
-    }
-  ]
-});
+interface TaskFlowData {
+  assignment: Assignment | null;
+  task: any;
+  submission: Submission | null;
+  comments: any[];
+}
 
 export default function TaskFlowDetail() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+  
   const taskId = params.taskId as string;
   const qtyId = params.qtyId as string;
+  const assignmentId = qtyId; // qtyId is actually assignmentId
   const roleParam = searchParams.get("role") as "client" | "worker" | null;
+  
+  // State
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
+  const [taskFlowData, setTaskFlowData] = useState<TaskFlowData>({
+    assignment: null,
+    task: null,
+    submission: null,
+    comments: []
+  });
   
   // Auto-detect role based on user session (mock for now)
   const [userRole, setUserRole] = useState<"client" | "worker">(roleParam || "worker");
@@ -212,33 +69,107 @@ export default function TaskFlowDetail() {
   const [submissionNotes, setSubmissionNotes] = useState("");
   const [submissionFiles, setSubmissionFiles] = useState<File[]>([]);
 
-  // Mock: Use submitted flow for demo if qtyId includes "submitted" or "review"
-  const taskFlow = qtyId.includes("submitted") || qtyId.includes("review") 
-    ? getMockSubmittedTaskFlow(taskId, qtyId)
-    : getMockTaskFlow(taskId, qtyId);
-
-  // Auto-detect role: if task has submission and current user is not worker, assume client
+  // Fetch assignment and task data
   useEffect(() => {
-    // Priority 1: Use role from URL parameter
-    if (roleParam) {
-      setUserRole(roleParam);
-      return;
+    fetchTaskFlowData();
+  }, [assignmentId, taskId]);
+
+  const fetchTaskFlowData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch assignment details
+      const assignmentsResponse = await assignmentsApi.listAssignments();
+      const assignment = assignmentsResponse.data.data.find(a => a.id === assignmentId);
+      
+      if (!assignment) {
+        toast({
+          title: "Error",
+          description: "Assignment not found",
+          variant: "destructive",
+        });
+        router.push("/worker-dashboard");
+        return;
+      }
+
+      // Fetch task details
+      const taskResponse = await tasksApi.getTaskById(taskId);
+      const task = taskResponse.data;
+
+      // Fetch submission if exists
+      let submission = null;
+      if (assignment.submission?.id) {
+        try {
+          const submissionResponse = await submissionsApi.getSubmissionById(assignment.submission.id);
+          submission = submissionResponse.data;
+        } catch (error) {
+          console.log("No submission yet");
+        }
+      }
+
+      setTaskFlowData({
+        assignment,
+        task,
+        submission,
+        comments: [] // TODO: Add comments API
+      });
+
+    } catch (error: any) {
+      console.error('Error fetching task flow data:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load task flow data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    // Priority 2: Auto-detect based on submission status
-    // For demo: if submission exists and we're reviewing, set to client
-    if (taskFlow.submission && taskFlow.status === "in_review") {
-      setUserRole("client");
-    }
-  }, [roleParam, taskFlow.submission, taskFlow.status]);
+  };
 
   const handleReview = (decision: "approve" | "revision" | "reject") => {
     setReviewDecision(decision);
   };
 
-  const handleSubmitReview = () => {
-    console.log("Review decision:", reviewDecision, "Note:", reviewNote);
-    router.push("/client-dashboard");
+  const handleSubmitReview = async () => {
+    if (!reviewDecision || !taskFlowData.submission) return;
+
+    try {
+      setReviewing(true);
+
+      if (reviewDecision === "revision") {
+        await submissionsApi.requestFix(taskFlowData.submission.id, {
+          feedback: reviewNote || "Please revise your submission"
+        });
+
+        toast({
+          title: "Success",
+          description: "Revision request sent to worker",
+        });
+      } else if (reviewDecision === "approve") {
+        // TODO: Add approve submission API
+        toast({
+          title: "Success",
+          description: "Submission approved",
+        });
+      } else if (reviewDecision === "reject") {
+        // TODO: Add reject submission API
+        toast({
+          title: "Success",
+          description: "Submission rejected",
+        });
+      }
+
+      router.push("/client-dashboard");
+    } catch (error: any) {
+      console.error('Error reviewing submission:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit review",
+        variant: "destructive",
+      });
+    } finally {
+      setReviewing(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,14 +178,62 @@ export default function TaskFlowDetail() {
     }
   };
 
-  const handleSubmitWork = () => {
+  const handleSubmitWork = async () => {
     if (submissionFiles.length === 0) {
-      alert("Please upload at least one file");
+      toast({
+        title: "Error",
+        description: "Please upload at least one file",
+        variant: "destructive",
+      });
       return;
     }
-    console.log("Submitting work:", { files: submissionFiles, notes: submissionNotes });
-    // In real app: API call to submit work
-    router.push("/worker-dashboard");
+
+    if (!taskFlowData.assignment) {
+      toast({
+        title: "Error",
+        description: "Assignment not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // TODO: Upload files to S3 first and get URLs
+      // For now, using placeholder URL
+      const payloadUrl = "https://placeholder-s3-url.com/submission.zip";
+      const payloadHash = "placeholder-hash";
+
+      await submissionsApi.createSubmission({
+        assignmentId: taskFlowData.assignment.id,
+        payloadUrl,
+        payloadHash,
+        metadata: {
+          fileSize: submissionFiles.reduce((acc, f) => acc + f.size, 0),
+          fileName: submissionFiles[0].name,
+          mimeType: submissionFiles[0].type,
+        }
+      });
+
+      toast({
+        title: "Success",
+        description: "Work submitted successfully! It's now under review.",
+      });
+
+      // Refresh data
+      await fetchTaskFlowData();
+
+    } catch (error: any) {
+      console.error('Error submitting work:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit work",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -276,7 +255,50 @@ export default function TaskFlowDetail() {
     }
   };
 
-  const timeRemaining = new Date(taskFlow.deadline).getTime() - new Date().getTime();
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 bg-secondary flex items-center justify-center">
+          <Card className="w-96">
+            <CardContent className="pt-6 text-center">
+              <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading task flow...</p>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!taskFlowData.assignment || !taskFlowData.task) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 bg-secondary flex items-center justify-center">
+          <Card className="w-96">
+            <CardContent className="pt-6 text-center">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+              <h3 className="font-semibold mb-2">Task Not Found</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                The requested task assignment could not be found.
+              </p>
+              <Button onClick={() => router.push("/worker-dashboard")}>
+                Back to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const { assignment, task, submission } = taskFlowData;
+  const deadline = assignment.dueAt || task.deadline;
+  const timeRemaining = deadline ? new Date(deadline).getTime() - new Date().getTime() : 0;
   const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
 
   return (
@@ -289,23 +311,23 @@ export default function TaskFlowDetail() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">{taskFlow.taskTitle}</h1>
-                <Badge className={getStatusColor(taskFlow.status)}>
-                  {taskFlow.status.replace(/_/g, " ").toUpperCase()}
+                <h1 className="text-3xl font-bold">{task.title}</h1>
+                <Badge className={getStatusColor(assignment.status)}>
+                  {assignment.status.replace(/_/g, " ").toUpperCase()}
                 </Badge>
               </div>
               <p className="text-muted-foreground">
-                Task ID: {taskFlow.taskId} • Qty ID: {taskFlow.qtyId} • Viewing as: <strong>{userRole}</strong>
+                Task ID: {task.id} • Assignment ID: {assignment.id} • Viewing as: <strong>{userRole}</strong>
               </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-primary">${taskFlow.totalReward.toFixed(2)}</div>
-              <div className="text-sm text-muted-foreground">Total Reward ({taskFlow.quantityAmount} × ${taskFlow.reward})</div>
+              <div className="text-2xl font-bold text-primary">${task.reward}</div>
+              <div className="text-sm text-muted-foreground">Reward per completion</div>
             </div>
           </div>
 
           {/* Deadline Alert */}
-          {userRole === "worker" && !taskFlow.submission && hoursRemaining < 24 && (
+          {userRole === "worker" && !submission && hoursRemaining < 24 && hoursRemaining > 0 && (
             <Card className="mb-6 border-warning">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
@@ -313,7 +335,7 @@ export default function TaskFlowDetail() {
                   <div>
                     <div className="font-semibold text-warning">Deadline approaching!</div>
                     <div className="text-sm text-muted-foreground">
-                      {hoursRemaining} hours remaining until {new Date(taskFlow.deadline).toLocaleString()}
+                      {hoursRemaining} hours remaining until {deadline ? new Date(deadline).toLocaleString() : 'deadline'}
                     </div>
                   </div>
                 </div>
@@ -332,7 +354,7 @@ export default function TaskFlowDetail() {
                     <CardDescription>Track progress and submit your work</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Tabs defaultValue={taskFlow.submission ? "progress" : "submit"} className="w-full">
+                    <Tabs defaultValue={submission ? "progress" : "submit"} className="w-full">
                       <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="instructions">Instructions</TabsTrigger>
                         <TabsTrigger value="submit">Submit Work</TabsTrigger>
@@ -343,45 +365,46 @@ export default function TaskFlowDetail() {
                       <TabsContent value="instructions" className="space-y-4">
                         <div>
                           <h4 className="font-semibold mb-2">Task Description</h4>
-                          <p className="text-sm text-foreground">{taskFlow.taskDescription}</p>
+                          <p className="text-sm text-foreground">{task.description || 'No description available'}</p>
                         </div>
                         <Separator />
                         <div>
                           <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-accent" />
-                            Requirements
+                            Task Details
                           </h4>
-                          <ul className="space-y-1 text-sm text-foreground ml-6">
-                            {taskFlow.taskRequirements.map((req, idx) => (
-                              <li key={idx}>• {req}</li>
-                            ))}
-                          </ul>
+                          <div className="space-y-1 text-sm text-foreground ml-6">
+                            <p>• Category: {task.category || 'General'}</p>
+                            <p>• Reward: ${task.reward}</p>
+                            {deadline && <p>• Deadline: {new Date(deadline).toLocaleString()}</p>}
+                          </div>
                         </div>
                         <div className="bg-secondary/50 p-4 rounded-lg">
-                          <h4 className="font-semibold mb-2">Quantity Info</h4>
+                          <h4 className="font-semibold mb-2">Assignment Status</h4>
                           <div className="text-sm space-y-1">
-                            <p>Total items: <strong>{taskFlow.quantityAmount}</strong></p>
-                            <p>Completed: <strong>{taskFlow.completed}</strong></p>
-                            <p>Remaining: <strong>{taskFlow.quantityAmount - taskFlow.completed}</strong></p>
+                            <p>Status: <strong className="capitalize">{assignment.status.replace(/_/g, ' ')}</strong></p>
+                            <p>Started: <strong>{assignment.startedAt ? new Date(assignment.startedAt).toLocaleString() : 'Not started'}</strong></p>
+                            {assignment.dueAt && <p>Due: <strong>{new Date(assignment.dueAt).toLocaleString()}</strong></p>}
                           </div>
                         </div>
                       </TabsContent>
 
                       {/* Submit Work Tab */}
                       <TabsContent value="submit" className="space-y-4">
-                        {taskFlow.submission ? (
+                        {submission ? (
                           <div className="bg-accent/10 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                               <CheckCircle className="h-5 w-5 text-accent" />
                               <h4 className="font-semibold text-accent">Work Already Submitted</h4>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                              Your work was submitted on {new Date(taskFlow.submittedAt!).toLocaleString()}
+                              Your work was submitted on {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'recently'}
                               and is currently under review.
                             </p>
                           </div>
                         ) : (
                           <>
+                            {/* TODO: Integrate S3 file upload service for file storage */}
                             <div className="space-y-2">
                               <Label htmlFor="file-upload">Upload Files (Required)</Label>
                               <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
@@ -392,6 +415,7 @@ export default function TaskFlowDetail() {
                                   accept="image/*,.pdf,.json,.zip"
                                   onChange={handleFileChange}
                                   className="hidden"
+                                  disabled={submitting}
                                 />
                                 <label htmlFor="file-upload" className="cursor-pointer">
                                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -424,6 +448,7 @@ export default function TaskFlowDetail() {
                                 value={submissionNotes}
                                 onChange={(e) => setSubmissionNotes(e.target.value)}
                                 rows={5}
+                                disabled={submitting}
                               />
                             </div>
 
@@ -431,9 +456,19 @@ export default function TaskFlowDetail() {
                               size="lg" 
                               className="w-full bg-accent hover:bg-accent/90 text-white"
                               onClick={handleSubmitWork}
+                              disabled={submitting || submissionFiles.length === 0}
                             >
-                              <Upload className="mr-2 h-4 w-4" />
-                              Submit Work for Review
+                              {submitting ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Submitting...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Submit Work for Review
+                                </>
+                              )}
                             </Button>
                           </>
                         )}
@@ -442,31 +477,72 @@ export default function TaskFlowDetail() {
                       {/* Progress Tab */}
                       <TabsContent value="progress" className="space-y-4">
                         <div className="space-y-4">
-                          {taskFlow.steps.map((step, index) => (
-                            <div key={step.id} className="flex gap-4">
+                          <div className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                              <CheckCircle className="h-5 w-5 text-accent" />
+                              <div className="w-0.5 h-12 mt-2 bg-accent" />
+                            </div>
+                            <div className="flex-1 pb-4">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-semibold">Task Assigned</h4>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(assignment.createdAt).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground">Assignment created</p>
+                            </div>
+                          </div>
+
+                          {assignment.startedAt && (
+                            <div className="flex gap-4">
                               <div className="flex flex-col items-center">
-                                {getStepIcon(step.status)}
-                                {index < taskFlow.steps.length - 1 && (
-                                  <div className={`w-0.5 h-12 mt-2 ${
-                                    step.status === "completed" 
-                                      ? "bg-accent" 
-                                      : "bg-muted"
-                                  }`} />
-                                )}
+                                <CheckCircle className="h-5 w-5 text-accent" />
+                                {!submission && <div className="w-0.5 h-12 mt-2 bg-accent" />}
+                                {submission && <div className="w-0.5 h-12 mt-2 bg-accent" />}
                               </div>
                               <div className="flex-1 pb-4">
                                 <div className="flex items-center justify-between mb-1">
-                                  <h4 className="font-semibold">{step.name}</h4>
-                                  {step.timestamp && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {new Date(step.timestamp).toLocaleString()}
-                                    </span>
-                                  )}
+                                  <h4 className="font-semibold">In Progress</h4>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(assignment.startedAt).toLocaleString()}
+                                  </span>
                                 </div>
-                                <p className="text-sm text-muted-foreground">{step.description}</p>
+                                <p className="text-sm text-muted-foreground">Worker started working</p>
                               </div>
                             </div>
-                          ))}
+                          )}
+
+                          {submission && (
+                            <>
+                              <div className="flex gap-4">
+                                <div className="flex flex-col items-center">
+                                  <CheckCircle className="h-5 w-5 text-accent" />
+                                  <div className="w-0.5 h-12 mt-2 bg-muted" />
+                                </div>
+                                <div className="flex-1 pb-4">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h4 className="font-semibold">Submitted</h4>
+                                    <span className="text-xs text-muted-foreground">
+                                      {new Date(submission.submittedAt).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Work submitted for review</p>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-4">
+                                <div className="flex flex-col items-center">
+                                  <AlertCircle className="h-5 w-5 text-warning" />
+                                </div>
+                                <div className="flex-1 pb-4">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h4 className="font-semibold">Under Review</h4>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Client is reviewing the submission</p>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </TabsContent>
                     </Tabs>
@@ -479,73 +555,116 @@ export default function TaskFlowDetail() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Task Progress Timeline</CardTitle>
-                    <CardDescription>Track the current status and history of this quantity</CardDescription>
+                    <CardDescription>Track the current status and history of this assignment</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {taskFlow.steps.map((step, index) => (
-                        <div key={step.id} className="flex gap-4">
+                      {/* Assignment Created */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <CheckCircle className="h-5 w-5 text-accent" />
+                          <div className="w-0.5 h-16 mt-2 bg-accent" />
+                        </div>
+                        <div className="flex-1 pb-8">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-semibold">Assignment Created</h4>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(assignment.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Task assigned to worker</p>
+                        </div>
+                      </div>
+
+                      {/* Started */}
+                      {assignment.startedAt && (
+                        <div className="flex gap-4">
                           <div className="flex flex-col items-center">
-                            {getStepIcon(step.status)}
-                            {index < taskFlow.steps.length - 1 && (
-                              <div className={`w-0.5 h-16 mt-2 ${
-                                step.status === "completed" 
-                                  ? "bg-accent" 
-                                  : "bg-muted"
-                              }`} />
-                            )}
+                            <CheckCircle className="h-5 w-5 text-accent" />
+                            {submission && <div className="w-0.5 h-16 mt-2 bg-accent" />}
+                            {!submission && <div className="w-0.5 h-16 mt-2 bg-muted" />}
                           </div>
                           <div className="flex-1 pb-8">
                             <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-semibold">{step.name}</h4>
-                              {step.timestamp && (
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(step.timestamp).toLocaleString()}
-                                </span>
-                              )}
+                              <h4 className="font-semibold">In Progress</h4>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(assignment.startedAt).toLocaleString()}
+                              </span>
                             </div>
-                            <p className="text-sm text-muted-foreground">{step.description}</p>
+                            <p className="text-sm text-muted-foreground">Worker started working on task</p>
                           </div>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Submitted */}
+                      {submission && (
+                        <>
+                          <div className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                              <CheckCircle className="h-5 w-5 text-accent" />
+                              <div className="w-0.5 h-16 mt-2 bg-muted" />
+                            </div>
+                            <div className="flex-1 pb-8">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-semibold">Submitted</h4>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(submission.submittedAt).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground">Work submitted for review</p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                              <AlertCircle className="h-5 w-5 text-warning" />
+                            </div>
+                            <div className="flex-1 pb-8">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-semibold">Under Review</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">Awaiting client review</p>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               )}
 
               {/* Submission Details (Both views when submitted) */}
-              {taskFlow.submission && (
+              {submission && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Submission Details</CardTitle>
                     <CardDescription>
-                      Submitted on {new Date(taskFlow.submission.submittedAt).toLocaleString()}
+                      Submitted on {new Date(submission.submittedAt).toLocaleString()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
                       <h4 className="font-semibold mb-3 flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        Uploaded Files ({taskFlow.submission.files.length})
+                        Submission File
                       </h4>
                       <div className="space-y-2">
-                        {taskFlow.submission.files.map((file, index) => (
-                          <div 
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <div className="text-sm font-medium">{file.name}</div>
-                                <div className="text-xs text-muted-foreground">{file.size}</div>
+                        <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-sm font-medium">Submission Data</div>
+                              <div className="text-xs text-muted-foreground">
+                                URL: {submission.payloadUrl}
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm">
-                              <Download className="h-4 w-4" />
-                            </Button>
                           </div>
-                        ))}
+                          <Button variant="ghost" size="sm" asChild>
+                            <a href={submission.payloadUrl} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
@@ -554,15 +673,26 @@ export default function TaskFlowDetail() {
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center gap-2">
                         <FileText className="h-4 w-4" />
-                        Worker Notes
+                        QA Status
                       </h4>
-                      <p className="text-sm text-foreground bg-secondary/50 p-3 rounded-lg">
-                        {taskFlow.submission.notes}
-                      </p>
+                      <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Status:</span>
+                          <Badge className={submission.qaFlags.passed ? "bg-accent" : "bg-warning"}>
+                            {submission.qaFlags.passed ? "Passed" : "Needs Review"}
+                          </Badge>
+                        </div>
+                        {submission.earlySubmission && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Early Submission Bonus:</span>
+                            <span className="text-accent font-medium">+{submission.bonusPoints} points</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Review Actions (Client Only) */}
-                    {userRole === "client" && taskFlow.status === "in_review" && (
+                    {userRole === "client" && submission.status === "submitted" && (
                       <>
                         <Separator />
                         <div className="space-y-4">
@@ -601,13 +731,22 @@ export default function TaskFlowDetail() {
                                 value={reviewNote}
                                 onChange={(e) => setReviewNote(e.target.value)}
                                 rows={4}
+                                disabled={reviewing}
                               />
                               <div className="flex gap-3">
                                 <Button 
                                   onClick={handleSubmitReview}
                                   className="bg-primary hover:bg-primary/90"
+                                  disabled={reviewing}
                                 >
-                                  Submit Review
+                                  {reviewing ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Submitting...
+                                    </>
+                                  ) : (
+                                    "Submit Review"
+                                  )}
                                 </Button>
                                 <Button 
                                   variant="outline"
@@ -615,6 +754,7 @@ export default function TaskFlowDetail() {
                                     setReviewDecision(null);
                                     setReviewNote("");
                                   }}
+                                  disabled={reviewing}
                                 >
                                   Cancel
                                 </Button>
@@ -641,37 +781,30 @@ export default function TaskFlowDetail() {
                     <div className="text-sm text-muted-foreground mb-1">Deadline</div>
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <Calendar className="h-4 w-4" />
-                      {new Date(taskFlow.deadline).toLocaleString()}
+                      {deadline ? new Date(deadline).toLocaleString() : 'No deadline set'}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {hoursRemaining > 0 ? `${hoursRemaining} hours remaining` : "Overdue"}
-                    </div>
+                    {deadline && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {hoursRemaining > 0 ? `${hoursRemaining} hours remaining` : "Overdue"}
+                      </div>
+                    )}
                   </div>
 
                   <Separator />
 
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Reward</div>
-                    <div className="text-xl font-bold text-accent">${taskFlow.totalReward.toFixed(2)}</div>
-                    <div className="text-xs text-muted-foreground">{taskFlow.quantityAmount} items × ${taskFlow.reward}</div>
+                    <div className="text-xl font-bold text-accent">${task.reward}</div>
+                    <div className="text-xs text-muted-foreground">Per completion</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="text-sm text-muted-foreground mb-1">Progress</div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-accent rounded-full h-2 transition-all"
-                          style={{ width: `${(taskFlow.completed / taskFlow.quantityAmount) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium">{Math.round((taskFlow.completed / taskFlow.quantityAmount) * 100)}%</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {taskFlow.completed} / {taskFlow.quantityAmount} completed
-                    </div>
+                    <div className="text-sm text-muted-foreground mb-1">Assignment Status</div>
+                    <Badge className={getStatusColor(assignment.status)}>
+                      {assignment.status.replace(/_/g, ' ').toUpperCase()}
+                    </Badge>
                   </div>
 
                   <Separator />
@@ -679,11 +812,11 @@ export default function TaskFlowDetail() {
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Task ID:</span>
-                      <span className="font-mono">{taskFlow.taskId}</span>
+                      <span className="font-mono">{task.id}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Quantity ID:</span>
-                      <span className="font-mono">{taskFlow.qtyId}</span>
+                      <span className="text-muted-foreground">Assignment ID:</span>
+                      <span className="font-mono">{assignment.id}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -697,18 +830,15 @@ export default function TaskFlowDetail() {
                 <CardContent>
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar>
-                      <AvatarImage src={taskFlow.workerAvatar} />
-                      <AvatarFallback>{taskFlow.workerName[0]}</AvatarFallback>
+                      <AvatarFallback>
+                        {assignment.workerId.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-semibold">{taskFlow.workerName}</div>
-                      <div className="text-sm text-muted-foreground">ID: {taskFlow.workerId}</div>
+                      <div className="font-semibold">Worker</div>
+                      <div className="text-sm text-muted-foreground">ID: {assignment.workerId}</div>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full" size="sm">
-                    <User className="mr-2 h-4 w-4" />
-                    View Profile
-                  </Button>
                 </CardContent>
               </Card>
 
@@ -720,18 +850,13 @@ export default function TaskFlowDetail() {
                 <CardContent>
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar>
-                      <AvatarImage src={taskFlow.clientAvatar} />
-                      <AvatarFallback>{taskFlow.clientName[0]}</AvatarFallback>
+                      <AvatarFallback>CL</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-semibold">{taskFlow.clientName}</div>
-                      <div className="text-sm text-muted-foreground">ID: {taskFlow.clientId}</div>
+                      <div className="font-semibold">Client</div>
+                      <div className="text-sm text-muted-foreground">Task Owner</div>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full" size="sm">
-                    <User className="mr-2 h-4 w-4" />
-                    View Profile
-                  </Button>
                 </CardContent>
               </Card>
 
@@ -744,7 +869,7 @@ export default function TaskFlowDetail() {
                   <Button 
                     variant="outline" 
                     className="w-full justify-start"
-                    onClick={() => router.push(`/task-detail?id=${taskFlow.taskId}&role=${userRole}`)}
+                    onClick={() => router.push(`/task-detail?id=${task.id}&role=${userRole}`)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     View Full Task

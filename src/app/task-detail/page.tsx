@@ -9,7 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { tasksApi } from "@/api";
+import { tasksApi, assignmentsApi } from "@/api";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -43,18 +45,22 @@ import {
   ArrowLeft,
   FileText,
   Calendar,
-  Wallet
+  Wallet,
+  Loader2
 } from "lucide-react";
 
 function TaskDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const id = searchParams.get("id");
   const userRole = searchParams.get("role") || "worker"; // client or worker
   const isDraft = searchParams.get("draft") === "true";
   
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState<any>(null);
@@ -126,10 +132,35 @@ function TaskDetailContent() {
     );
   }
 
-  const handleAcceptTask = () => {
-    // In real app, would call API to accept task and get assigned qtyId
-    const assignedQtyId = "qty-new-" + Math.random().toString(36).substr(2, 9);
-    router.push(`/task-flow/${task.id}/${assignedQtyId}`);
+  const handleAcceptTask = async () => {
+    if (!task?.id) return;
+    
+    try {
+      setAccepting(true);
+      
+      const response = await assignmentsApi.acceptTask({
+        taskId: task.id,
+      });
+
+      if (response.success) {
+        toast({
+          title: "Task Accepted!",
+          description: `You have successfully accepted the task. Start working on it now.`,
+        });
+        
+        // Navigate to task flow with the assignment
+        router.push(`/task-flow/${task.id}`);
+      }
+    } catch (err: any) {
+      console.error('Error accepting task:', err);
+      toast({
+        title: "Error",
+        description: err?.error?.message || 'Failed to accept task. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setAccepting(false);
+    }
   };
 
   const handleQuickAccept = (quantity: any) => {
@@ -155,12 +186,62 @@ function TaskDetailContent() {
     // In real app: API call to submit review
   };
 
-  const handleFundTask = () => {
-    console.log("Funding task:", id, {
-      totalAmount: totalCost
-    });
-    // Handle funding logic here
-    router.push("/client-dashboard");
+  const handleFundTask = async () => {
+    if (!id) return;
+    
+    // Check authentication
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to publish a task.",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+    
+    try {
+      setAccepting(true); // Use accepting state for loading
+      
+      console.log('🚀 Publishing task:', id);
+      
+      // publishTask will automatically include accessToken via getHeaders(true)
+      const response = await tasksApi.publishTask(id);
+      
+      console.log('✅ Publish response:', response);
+      
+      if (response.success) {
+        toast({
+          title: "Task Published!",
+          description: `Your task has been published successfully and is now available for workers.`,
+        });
+        
+        // Navigate back to client dashboard
+        router.push("/client-dashboard");
+      }
+    } catch (err: any) {
+      console.error('❌ Error publishing task:', err);
+      console.error('Error details:', JSON.stringify(err, null, 2));
+      
+      // Get detailed error message
+      const errorMessage = err?.error?.message 
+        || err?.error 
+        || err?.message 
+        || 'Failed to publish task. Please try again.';
+      
+      const errorDetails = err?.error?.details 
+        || err?.details 
+        || err?.currentStatus 
+        || '';
+      
+      toast({
+        title: "Error Publishing Task",
+        description: `${errorMessage}${errorDetails ? ` - ${JSON.stringify(errorDetails)}` : ''}`,
+        variant: "destructive",
+      });
+    } finally {
+      setAccepting(false);
+    }
   };
 
   // Calculate costs
@@ -416,14 +497,25 @@ function TaskDetailContent() {
                     onClick={handleFundTask} 
                     className="flex-1 bg-primary hover:bg-primary/90"
                     size="lg"
+                    disabled={accepting}
                   >
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Fund & Publish Task
+                    {accepting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Fund & Publish Task
+                      </>
+                    )}
                   </Button>
                   <Button 
                     variant="outline"
                     size="lg"
                     onClick={() => router.push("/client-dashboard")}
+                    disabled={accepting}
                   >
                     Cancel
                   </Button>
@@ -443,8 +535,16 @@ function TaskDetailContent() {
                 size="lg" 
                 className="flex-1 bg-accent hover:bg-accent/90 text-white"
                 onClick={handleAcceptTask}
+                disabled={accepting}
               >
-                Accept Task
+                {accepting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Accepting...
+                  </>
+                ) : (
+                  'Accept Task'
+                )}
               </Button>
               <Button variant="outline" size="lg" onClick={() => router.push("/discover-tasks")}>
                 Back to Search

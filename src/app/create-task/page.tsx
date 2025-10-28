@@ -128,7 +128,7 @@ export default function CreateTask() {
         category,
         reward: rewardNum,
         qty: quantityNum,
-        deadline: deadlineISO,
+        deadline: deadlineISO, 
       });
 
       if (response.success) {

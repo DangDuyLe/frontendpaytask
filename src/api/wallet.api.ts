@@ -11,9 +11,9 @@ export interface CreateWalletRequest {
 }
 
 export interface WithdrawRequest {
-  recipientAddress: string;
   amount: number;
   assetId: string;
+  recipientAddress: string;
 }
 
 export interface Wallet {
@@ -81,7 +81,7 @@ export interface WithdrawResponse {
 export const walletApi = {
   // POST /api/wallets
   createWallet: async (data: CreateWalletRequest): Promise<Wallet> => {
-    return await apiFetch('/wallets', {
+    return await apiFetch('/wallet', {
       method: 'POST',
       headers: getHeaders(true),
       body: JSON.stringify(data),
@@ -90,7 +90,7 @@ export const walletApi = {
 
   // GET /api/wallets
   getUserWallets: async (): Promise<Wallet[]> => {
-    return await apiFetch('/wallets', {
+    return await apiFetch('/wallet', {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -98,7 +98,7 @@ export const walletApi = {
 
   // GET /api/wallets/:walletId
   getWalletById: async (walletId: string): Promise<Wallet> => {
-    return await apiFetch(`/wallets/${walletId}`, {
+    return await apiFetch(`/wallet/${walletId}`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -106,7 +106,7 @@ export const walletApi = {
 
   // GET /api/wallets/:walletId/usdc-balance
   getUsdcBalance: async (walletId: string): Promise<WalletBalance> => {
-    return await apiFetch(`/wallets/${walletId}/usdc-balance`, {
+    return await apiFetch(`/wallet/${walletId}/usdc-balance`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -114,7 +114,7 @@ export const walletApi = {
 
   // GET /api/wallets/:walletId/deposit-address
   getDepositAddress: async (walletId: string, assetId: string): Promise<DepositAddress> => {
-    return await apiFetch(`/wallets/${walletId}/deposit-address?asset_id=${assetId}`, {
+    return await apiFetch(`/wallet/${walletId}/deposit-address?asset_id=${assetId}`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -122,7 +122,7 @@ export const walletApi = {
 
   // POST /api/wallets/:walletId/sync-solana-address
   syncSolanaAddress: async (walletId: string): Promise<{ message: string }> => {
-    return await apiFetch(`/wallets/${walletId}/sync-solana-address`, {
+    return await apiFetch(`/wallet/${walletId}/sync-solana-address`, {
       method: 'POST',
       headers: getHeaders(true),
     });
@@ -130,7 +130,7 @@ export const walletApi = {
 
   // GET /api/wallets/:walletId/transactions
   getTransactions: async (walletId: string): Promise<TransactionListResponse> => {
-    return await apiFetch(`/wallets/${walletId}/transactions`, {
+    return await apiFetch(`/wallet/${walletId}/transactions`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -138,7 +138,7 @@ export const walletApi = {
 
   // POST /api/wallets/:walletId/withdraw
   withdraw: async (walletId: string, data: WithdrawRequest): Promise<WithdrawResponse> => {
-    return await apiFetch(`/wallets/${walletId}/withdraw`, {
+    return await apiFetch(`/wallet/${walletId}/withdraw`, {
       method: 'POST',
       headers: getHeaders(true),
       body: JSON.stringify(data),

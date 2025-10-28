@@ -77,7 +77,7 @@ export interface MyAssignmentsResponse {
 export const assignmentsApi = {
   // POST /api/assignments/accept
   acceptTask: async (data: AcceptTaskRequest): Promise<AcceptTaskResponse> => {
-    return await apiFetch('/assignments/accept', {
+    return await apiFetch('/tasks/assignments/accept', {
       method: 'POST',
       headers: getHeaders(true), // ✅ Include auth token
       body: JSON.stringify(data),

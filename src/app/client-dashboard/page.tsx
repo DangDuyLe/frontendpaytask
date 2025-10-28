@@ -20,6 +20,8 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [displayLimit, setDisplayLimit] = useState(5); // Initially show 5 tasks
+  const [totalTasks, setTotalTasks] = useState(0); // Total tasks from API
   const [stats, setStats] = useState({
     totalSpent: 0,
     activeTasks: 0,
@@ -34,9 +36,22 @@ export default function ClientDashboard() {
       return;
     }
     if (userId) {
+      setDisplayLimit(5); // Reset display limit when tab changes
       fetchTasks();
     }
   }, [activeTab, userId, isAuthenticated]);
+
+  // Auto-refresh tasks after 5 seconds on initial load
+  useEffect(() => {
+    if (!isAuthenticated || !userId) return;
+    
+    const timer = setTimeout(() => {
+      console.log('🔄 Auto-refreshing tasks after 5 seconds...');
+      fetchTasks();
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [userId, isAuthenticated]); // Only run once when userId is available
 
   const fetchTasks = async () => {
     if (!userId) return; // Wait for userId to be available
@@ -62,7 +77,10 @@ export default function ClientDashboard() {
       const response = await tasksApi.getMyTasks(queryParams);
 
       if (response.success) {
+        console.log('📊 Fetched tasks:', response.data.data.length, 'tasks');
+        console.log('📋 Tasks data:', response.data.data);
         setTasks(response.data.data);
+        setTotalTasks(response.data.pagination?.total || response.data.data.length);
         
         // Calculate stats from tasks
         const totalSpent = response.data.data.reduce((sum, task) => {
@@ -284,7 +302,16 @@ export default function ClientDashboard() {
                       </Link>
                     </div>
                   ) : (
-                    tasks.map((task) => {
+                    <>
+                      {/* Display info about total tasks */}
+                      {tasks.length > 0 && (
+                        <div className="text-sm text-muted-foreground mb-4">
+                          Showing {Math.min(displayLimit, tasks.length)} of {tasks.length} tasks
+                        </div>
+                      )}
+                      
+                      {/* Task list - only show up to displayLimit */}
+                      {tasks.slice(0, displayLimit).map((task) => {
                       const completed = task._count?.assignments || 0;
                       const total = task.qty;
                       const reward = parseFloat(task.reward);
@@ -369,7 +396,34 @@ export default function ClientDashboard() {
                           </CardContent>
                         </Card>
                       );
-                    })
+                    })}
+                    
+                    {/* See More button - only show if there are more tasks to display */}
+                    {displayLimit < tasks.length && (
+                      <div className="flex justify-center pt-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setDisplayLimit(prev => prev + 5)}
+                          className="w-full md:w-auto"
+                        >
+                          See More ({tasks.length - displayLimit} remaining)
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Show Less button - only show if we're displaying more than 5 */}
+                    {displayLimit > 5 && displayLimit >= tasks.length && (
+                      <div className="flex justify-center pt-4">
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => setDisplayLimit(5)}
+                          className="w-full md:w-auto"
+                        >
+                          Show Less
+                        </Button>
+                      </div>
+                    )}
+                  </>
                   )}
                 </TabsContent>
               </Tabs>

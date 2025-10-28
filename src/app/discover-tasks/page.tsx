@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, DollarSign, Clock, Users, Filter, Eye, Loader2 } from "lucide-react";
 import { tasksApi, assignmentsApi, type Task } from "@/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function DiscoverTasks() {
   const router = useRouter();
   const { toast } = useToast();
+  const { userId } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +76,21 @@ export default function DiscoverTasks() {
   const handleAcceptTask = async (taskId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     
+    if (!userId) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to accept tasks.",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+    
     try {
-      const response = await assignmentsApi.acceptTask({ taskId });
+      const response = await assignmentsApi.acceptTask({ 
+        taskId,
+        workerId: userId 
+      });
       
       if (response.success) {
         toast({

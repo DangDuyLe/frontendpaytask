@@ -24,7 +24,7 @@ export default function WalletPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawAddress, setWithdrawAddress] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +74,16 @@ export default function WalletPage() {
       return;
     }
 
+    // Validate recipient address
+    if (!recipientAddress || recipientAddress.trim().length === 0) {
+      toast({
+        title: "Invalid address",
+        description: "Please enter a valid recipient address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount < 5) {
       toast({
@@ -93,32 +103,23 @@ export default function WalletPage() {
       return;
     }
 
-    if (!withdrawAddress.trim()) {
-      toast({
-        title: "Invalid address",
-        description: "Please enter a valid withdrawal address.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
       setWithdrawing(true);
       
       const response = await walletApi.withdraw(wallet.id, {
-        recipientAddress: withdrawAddress,
         amount,
         assetId: 'usdc', // Default to USDC
+        recipientAddress: recipientAddress.trim(),
       });
 
       if (response.success) {
         toast({
           title: "Withdrawal initiated",
-          description: `$${amount} will be sent to your wallet. Transaction: ${response.transactionHash || 'Pending'}`,
+          description: `$${amount} will be sent to ${recipientAddress.slice(0, 8)}...${recipientAddress.slice(-8)}. Transaction: ${response.transactionId || 'Pending'}`,
         });
         
         setWithdrawAmount("");
-        setWithdrawAddress("");
+        setRecipientAddress("");
         
         // Refresh wallet data
         fetchWalletData();
@@ -245,14 +246,19 @@ export default function WalletPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address">Recipient Address</Label>
+                  <Label htmlFor="recipient">Recipient Address</Label>
                   <Input
-                    id="address"
-                    placeholder="Enter Solana address"
-                    value={withdrawAddress}
-                    onChange={(e) => setWithdrawAddress(e.target.value)}
+                    id="recipient"
+                    type="text"
+                    placeholder="Enter Solana wallet address"
+                    value={recipientAddress}
+                    onChange={(e) => setRecipientAddress(e.target.value)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the Solana address where you want to receive your funds
+                  </p>
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="amount">Amount (USD)</Label>
                   <Input

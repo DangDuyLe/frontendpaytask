@@ -205,7 +205,7 @@ export default function WorkerDashboard() {
                     <Card 
                       key={assignment.id}
                       className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => router.push(`/task-flow/${assignment.taskId}`)}
+                      onClick={() => router.push(`/task-flow/${assignment.taskId}/${assignment.id}`)}
                     >
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">

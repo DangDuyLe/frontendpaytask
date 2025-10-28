@@ -1,5 +1,5 @@
 'use client';
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { tasksApi } from "@/api";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -52,47 +53,78 @@ function TaskDetailContent() {
   const userRole = searchParams.get("role") || "worker"; // client or worker
   const isDraft = searchParams.get("draft") === "true";
   
+  const [task, setTask] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState<any>(null);
   const [reviewingQty, setReviewingQty] = useState<string | null>(null);
   const [quickReviewDecision, setQuickReviewDecision] = useState<"approve" | "reject" | "revision" | null>(null);
   const [quickReviewNote, setQuickReviewNote] = useState("");
-  
 
+  // Fetch task detail from API
+  useEffect(() => {
+    if (!id) {
+      setError("Task ID is required");
+      setLoading(false);
+      return;
+    }
 
-  // Mock data - would come from API
-  const task = {
-    id: id || "1",
-    title: "Verify Restaurant Menu Prices",
-    description: "Visit the restaurant and verify that all menu prices match our database. Take photos of the menu items and confirm pricing accuracy. Must be completed during business hours (11am-9pm).",
-    category: "Data Verification",
-    reward: 5.00,
-    quantity: 50,
-    quantityRemaining: 23,
-    deadline: "2025-10-30T18:00:00",
-    requiredSkills: ["Photography", "Data Entry", "Attention to Detail"],
-    languages: ["English"],
-    estimatedTime: "30 minutes",
-    client: {
-      id: "client-1",
-      name: "FoodieData Inc.",
-      reputation: 4.8,
-      completedTasks: 127,
-      avatar: "/placeholder.svg"
-    },
-    requirements: [
-      "Must have a smartphone with camera",
-      "Must be located within 5km of restaurant",
-      "Must complete during restaurant operating hours"
-    ],
-    // For client view - list of active quantities
-    activeQuantities: [
-      { qtyId: "qty-1", workerId: "worker-123", workerName: "John Doe", workerAvatar: "/placeholder.svg", workerRating: 4.9, status: "in_review", progress: 50, total: 50, assignedAt: "2025-10-26T08:00:00", hasSubmission: true },
-      { qtyId: "qty-2", workerId: "worker-124", workerName: "Jane Smith", workerAvatar: "/placeholder.svg", workerRating: 4.7, status: "completed", progress: 30, total: 30, assignedAt: "2025-10-25T10:00:00", hasSubmission: false },
-      { qtyId: "qty-3", workerId: "worker-125", workerName: "Bob Wilson", workerAvatar: "/placeholder.svg", workerRating: 4.6, status: "in_progress", progress: 15, total: 40, assignedAt: "2025-10-26T11:00:00", hasSubmission: false },
-      { qtyId: "qty-4", workerId: "worker-126", workerName: "Alice Johnson", workerAvatar: "/placeholder.svg", workerRating: 4.8, status: "in_review", progress: 25, total: 25, assignedAt: "2025-10-26T08:30:00", hasSubmission: true },
-    ]
-  };
+    const fetchTaskDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await tasksApi.getTaskById(id);
+        
+        if (response.success) {
+          setTask(response.data);
+        } else {
+          setError("Failed to load task details");
+        }
+      } catch (err: any) {
+        console.error("Error fetching task detail:", err);
+        setError(err?.error?.message || "Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTaskDetail();
+  }, [id]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 bg-secondary">
+          <div className="container mx-auto px-6 py-8 max-w-7xl">
+            <div className="text-center py-12">Loading task details...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !task) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 bg-secondary">
+          <div className="container mx-auto px-6 py-8 max-w-7xl">
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">{error || "Task not found"}</p>
+              <Button onClick={() => router.back()}>Go Back</Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleAcceptTask = () => {
     // In real app, would call API to accept task and get assigned qtyId
@@ -132,7 +164,7 @@ function TaskDetailContent() {
   };
 
   // Calculate costs
-  const totalTaskCost = task.quantity * task.reward;
+  const totalTaskCost = task ? parseFloat(task.reward) * task.qty : 0;
   const platformFee = totalTaskCost * 0.05;
   const totalCost = totalTaskCost + platformFee;
 
@@ -183,41 +215,43 @@ function TaskDetailContent() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <Badge className="mb-2">{task.category}</Badge>
+                  {task.category && <Badge className="mb-2">{task.category}</Badge>}
                   <CardTitle className="text-3xl mb-2">{task.title}</CardTitle>
                   <CardDescription className="text-base">
-                    {task.quantityRemaining} of {task.quantity} positions available
+                    {task.qty} position{task.qty > 1 ? 's' : ''} • {task._count?.assignments || 0} assignment{task._count?.assignments !== 1 ? 's' : ''} 
                   </CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-accent">${task.reward}</div>
+                  <div className="text-3xl font-bold text-accent">${parseFloat(task.reward).toFixed(2)}</div>
                   <div className="text-sm text-muted-foreground">per task</div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm font-medium">Deadline</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(task.deadline).toLocaleDateString()}
+                {task.deadline && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-sm font-medium">Deadline</div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(task.deadline).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-sm font-medium">Est. Time</div>
-                    <div className="text-sm text-muted-foreground">{task.estimatedTime}</div>
+                    <div className="text-sm font-medium">Status</div>
+                    <div className="text-sm text-muted-foreground capitalize">{task.status}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-sm font-medium">Location</div>
-                    <div className="text-sm text-muted-foreground">On-site</div>
+                    <div className="text-sm font-medium">Budget</div>
+                    <div className="text-sm text-muted-foreground">${task.budget || (parseFloat(task.reward) * task.qty).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -225,97 +259,60 @@ function TaskDetailContent() {
           </Card>
 
           {/* Task Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground leading-relaxed">{task.description}</p>
-            </CardContent>
-          </Card>
+          {task.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Task Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground leading-relaxed">{task.description}</p>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {task.requirements.map((req, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <Award className="h-4 w-4 text-accent mt-1 flex-shrink-0" />
-                    <span className="text-foreground">{req}</span>
-                  </li>
-                ))}
-              </ul>
-              <Separator className="my-4" />
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium mb-2">Required Skills</div>
-                  <div className="flex flex-wrap gap-2">
-                    {task.requiredSkills.map((skill) => (
-                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium mb-2">Languages</div>
-                  <div className="flex flex-wrap gap-2">
-                    {task.languages.map((lang) => (
-                      <Badge key={lang} variant="secondary">{lang}</Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Requirements - Hidden for now since not in API */}
+          {/* <Card>...</Card> */}
 
           {/* Client Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Posted By</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={task.client.avatar} />
-                    <AvatarFallback>{task.client.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-semibold">{task.client.name}</div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-accent text-accent" />
-                        {task.client.reputation} rating
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Award className="h-3 w-3" />
-                        {task.client.completedTasks} tasks completed
-                      </span>
+          {task.client && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Posted By</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback>{task.client.email?.[0]?.toUpperCase() || 'C'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold">{task.client.email}</div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Award className="h-3 w-3" />
+                          Client ID: {task.client.id.slice(0, 8)}...
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <Button variant="outline" onClick={() => router.push(`/profile/${task.client.id}`)}>
+                    View Profile
+                  </Button>
                 </div>
-                <Button variant="outline" onClick={() => router.push(`/profile/${task.client.id}`)}>
-                  View Profile
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Active Quantities (Client View Only) */}
-          {userRole === "client" && task.activeQuantities && task.activeQuantities.length > 0 && (
+          {userRole === "client" && task.assignments && task.assignments.length > 0 && (
             <>
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>Assigned Quantities ({task.activeQuantities.length})</CardTitle>
+                      <CardTitle>Assignments ({task.assignments.length})</CardTitle>
                       <CardDescription>Track progress of each worker assignment</CardDescription>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {task.activeQuantities.filter(q => q.status === "in_review").length} Pending Review
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -324,78 +321,51 @@ function TaskDetailContent() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Worker</TableHead>
-                          <TableHead>Quantity</TableHead>
-                          <TableHead>Progress</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Assigned</TableHead>
+                          <TableHead>Started</TableHead>
+                          <TableHead>Due</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {task.activeQuantities.map((qty) => (
-                          <TableRow key={qty.qtyId}>
+                        {task.assignments.map((assignment: any) => (
+                          <TableRow key={assignment.id}>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
-                                  <AvatarImage src={qty.workerAvatar} />
-                                  <AvatarFallback>{qty.workerName[0]}</AvatarFallback>
+                                  <AvatarFallback>{assignment.worker?.email?.[0]?.toUpperCase() || 'W'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <div className="font-medium text-sm">{qty.workerName}</div>
-                                  <div className="text-xs text-muted-foreground">★ {qty.workerRating}</div>
+                                  <div className="font-medium text-sm">{assignment.worker?.email || 'Worker'}</div>
+                                  <div className="text-xs text-muted-foreground">{assignment.workerId.slice(0, 8)}...</div>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm font-medium">{qty.total} items</div>
-                              <div className="text-xs text-muted-foreground">
-                                ${(qty.total * task.reward).toFixed(2)}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-secondary rounded-full h-2 w-20">
-                                  <div 
-                                    className="bg-accent rounded-full h-2 transition-all"
-                                    style={{ width: `${(qty.progress / qty.total) * 100}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs font-medium">{qty.progress}/{qty.total}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={`${getStatusColor(qty.status)} flex items-center gap-1 w-fit`}>
-                                {getStatusIcon(qty.status)}
-                                {qty.status.replace(/_/g, " ")}
+                              <Badge className={`${getStatusColor(assignment.status)} flex items-center gap-1 w-fit`}>
+                                {getStatusIcon(assignment.status)}
+                                {assignment.status.replace(/_/g, " ")}
                               </Badge>
                             </TableCell>
                             <TableCell>
                               <div className="text-xs text-muted-foreground">
-                                {new Date(qty.assignedAt).toLocaleDateString()}
+                                {assignment.startedAt ? new Date(assignment.startedAt).toLocaleDateString() : 'N/A'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs text-muted-foreground">
+                                {assignment.dueAt ? new Date(assignment.dueAt).toLocaleDateString() : 'N/A'}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex gap-2 justify-end">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => router.push(`/task-flow/${task.id}/${qty.qtyId}?role=client`)}
-                                >
-                                  <Eye className="mr-1 h-3 w-3" />
-                                  View
-                                </Button>
-                                {qty.status === "in_review" && (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    className="bg-accent hover:bg-accent/90"
-                                    onClick={() => handleQuickReview(qty.qtyId)}
-                                  >
-                                    <CheckCircle className="mr-1 h-3 w-3" />
-                                    Review
-                                  </Button>
-                                )}
-                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.push(`/task-flow/${task.id}/${assignment.id}?role=client`)}
+                              >
+                                <Eye className="mr-1 h-3 w-3" />
+                                View
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -404,97 +374,10 @@ function TaskDetailContent() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Quick Review Dialog */}
-              {reviewingQty && (
-                <Card className="border-accent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-accent" />
-                      Quick Review: {task.activeQuantities.find(q => q.qtyId === reviewingQty)?.workerName}
-                    </CardTitle>
-                    <CardDescription>
-                      Review submission for quantity {reviewingQty}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-secondary/50 p-3 rounded-lg text-sm">
-                      <p className="text-muted-foreground">
-                        <strong>Note:</strong> For detailed review with file downloads and full submission details, 
-                        click "Full Review" to open the complete task flow page.
-                      </p>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button
-                        variant={quickReviewDecision === "approve" ? "default" : "outline"}
-                        className={quickReviewDecision === "approve" ? "bg-accent hover:bg-accent/90" : ""}
-                        onClick={() => setQuickReviewDecision("approve")}
-                      >
-                        <ThumbsUp className="mr-2 h-4 w-4" />
-                        Approve
-                      </Button>
-                      <Button
-                        variant={quickReviewDecision === "revision" ? "default" : "outline"}
-                        className={quickReviewDecision === "revision" ? "bg-warning hover:bg-warning/90" : ""}
-                        onClick={() => setQuickReviewDecision("revision")}
-                      >
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Request Revision
-                      </Button>
-                      <Button
-                        variant={quickReviewDecision === "reject" ? "destructive" : "outline"}
-                        onClick={() => setQuickReviewDecision("reject")}
-                      >
-                        <ThumbsDown className="mr-2 h-4 w-4" />
-                        Reject
-                      </Button>
-                    </div>
-
-                    {quickReviewDecision && (
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Feedback for worker</label>
-                          <Textarea
-                            placeholder="Add your feedback..."
-                            value={quickReviewNote}
-                            onChange={(e) => setQuickReviewNote(e.target.value)}
-                            rows={4}
-                          />
-                        </div>
-                        
-                        <div className="flex gap-3">
-                          <Button 
-                            onClick={handleSubmitQuickReview}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            Submit Review
-                          </Button>
-                          <Button 
-                            variant="outline"
-                            onClick={() => {
-                              setReviewingQty(null);
-                              setQuickReviewDecision(null);
-                              setQuickReviewNote("");
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => router.push(`/task-flow/${task.id}/${reviewingQty}`)}
-                          >
-                            <FileText className="mr-2 h-4 w-4" />
-                            Full Review
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
             </>
           )}
+
+          {/* Quick Review Dialog - Removed for now since we don't have active review functionality */}
 
           {/* Funding Section (Draft Tasks - Client View) */}
           {userRole === "client" && isDraft && (
@@ -512,7 +395,7 @@ function TaskDetailContent() {
                   <h3 className="font-semibold mb-3">Cost Breakdown</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Task Cost ({task.quantity} × ${task.reward})</span>
+                      <span className="text-muted-foreground">Task Cost ({task.qty} × ${parseFloat(task.reward).toFixed(2)})</span>
                       <span className="font-medium">${totalTaskCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { Bell, Check, Clock, DollarSign, AlertCircle, Star } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 export default function Notifications() {
   const router = useRouter();
@@ -148,16 +149,7 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-            <Button variant="ghost" onClick={() => router.back()}>
-              Back
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8 max-w-4xl">
         <div className="space-y-6">

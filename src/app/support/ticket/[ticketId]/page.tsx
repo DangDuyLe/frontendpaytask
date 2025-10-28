@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, MessageSquare, User, FileText, Calendar, Send, Clock, CheckCircle, AlertCircle, Paperclip } from "lucide-react";
 import { useState } from "react";
+import Navigation from "@/components/Navigation";
 
 export default function TicketDetail() {
   const router = useRouter();
@@ -235,19 +236,7 @@ export default function TicketDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-            </div>
-            <Button variant="ghost" onClick={() => router.push("/support")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Support
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <div className="space-y-6">

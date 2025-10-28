@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { MessageSquare, AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/Navigation";
 
 export default function Support() {
   const router = useRouter();
@@ -93,16 +94,7 @@ export default function Support() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-            <Button variant="ghost" onClick={() => router.back()}>
-              Back
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8 max-w-5xl">
         <div className="space-y-6">

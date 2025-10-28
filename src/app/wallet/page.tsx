@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/Navigation";
 
 export default function Wallet() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function Wallet() {
       {
         id: "1",
         type: "credit",
-        amount: 25.00,
+        amount: 5.00,
         description: "Task completion - Menu verification",
         date: "2025-10-26T14:30:00",
         status: "completed",
@@ -113,16 +114,7 @@ export default function Wallet() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-            <Button variant="ghost" onClick={() => router.back()}>
-              Back
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <div className="space-y-6">

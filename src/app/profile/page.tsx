@@ -21,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Star, Award, MapPin, Calendar, TrendingUp, CheckCircle, Edit, X } from "lucide-react";
 import { useState } from "react";
+import Navigation from "@/components/Navigation";
 
 export default function Profile() {
   const router = useRouter();
@@ -155,22 +156,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleEditClick}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button variant="ghost" onClick={() => router.back()}>
-                Back
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8 max-w-5xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

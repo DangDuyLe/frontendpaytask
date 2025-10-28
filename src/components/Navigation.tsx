@@ -4,10 +4,16 @@ import Link from 'next/link';
 import { Search, LayoutDashboard, PlusCircle, Compass, User, UserPlus, Briefcase, Menu, X, Bell, Wallet, Settings, Shield, HelpCircle, FileText, ClipboardCheck } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState } from 'react';
+import UserDropdown from './UserDropdown';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [secondaryNavOpen, setSecondaryNavOpen] = useState(true);
+  
+  // Mock authentication state - replace with real auth later
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Set to true to see the dropdown
+  const [username, setUsername] = useState('JohnDoe'); // Mock username
+  
   const { scrollY } = useScroll();
   
   // Create parallax effect for navbar background
@@ -22,6 +28,12 @@ export default function Navigation() {
     [0, 100],
     ['0px 1px 2px rgba(0, 0, 0, 0.05)', '0px 4px 12px rgba(0, 0, 0, 0.1)']
   );
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUsername('');
+    // Add your logout logic here (clear tokens, redirect, etc.)
+  };
 
   return (
     <motion.nav 
@@ -112,50 +124,63 @@ export default function Navigation() {
               </Link>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-            >
-              <Link href="/login">
-                <motion.span
-                  className="text-sm font-medium" 
-                  style={{ color: '#344256' }}
-                  whileHover={{ color: '#20A277', scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
+            {/* Show User Dropdown if logged in, otherwise show Sign In / Get Started */}
+            {isLoggedIn ? (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+              >
+                <UserDropdown username={username} onLogout={handleLogout} />
+              </motion.div>
+            ) : (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.4 }}
                 >
-                  Sign In
-                </motion.span>
-              </Link>
-            </motion.div>
+                  <Link href="/login">
+                    <motion.span
+                      className="text-sm font-medium" 
+                      style={{ color: '#344256' }}
+                      whileHover={{ color: '#20A277', scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      Sign In
+                    </motion.span>
+                  </Link>
+                </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <Link href="/signup">
-                <motion.button
-                  className="text-white px-6 py-2 rounded-lg text-sm font-medium relative overflow-hidden"
-                  style={{ backgroundColor: '#20A277' }}
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: '0 5px 15px rgba(32, 162, 119, 0.3)',
-                  }}
-                  whileTap={{ scale: 0.95 }}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0"
-                    whileHover={{ 
-                      x: ['-100%', '100%'],
-                      opacity: [0, 0.3, 0],
-                    }}
-                    transition={{ duration: 0.6 }}
-                  />
-                  <span className="relative z-10">Get Started</span>
-                </motion.button>
-              </Link>
-            </motion.div>
+                  <Link href="/signup">
+                    <motion.button
+                      className="text-white px-6 py-2 rounded-lg text-sm font-medium relative overflow-hidden"
+                      style={{ backgroundColor: '#20A277' }}
+                      whileHover={{ 
+                        scale: 1.05,
+                        boxShadow: '0 5px 15px rgba(32, 162, 119, 0.3)',
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0"
+                        whileHover={{ 
+                          x: ['-100%', '100%'],
+                          opacity: [0, 0.3, 0],
+                        }}
+                        transition={{ duration: 0.6 }}
+                      />
+                      <span className="relative z-10">Get Started</span>
+                    </motion.button>
+                  </Link>
+                </motion.div>
+              </>
+            )}
 
             {/* Toggle Secondary Nav Button */}
             <motion.div

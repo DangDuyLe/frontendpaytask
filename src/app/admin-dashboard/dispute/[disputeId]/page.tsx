@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, AlertTriangle, User, Briefcase, FileText, Calendar, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import Navigation from "@/components/Navigation";
 
 export default function DisputeReview() {
   const router = useRouter();
@@ -129,20 +130,7 @@ export default function DisputeReview() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-              <Badge variant="destructive">Admin</Badge>
-            </div>
-            <Button variant="ghost" onClick={() => router.push("/admin-dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8">
         <div className="space-y-6">

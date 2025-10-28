@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { Users, DollarSign, AlertTriangle, TrendingUp, FileText } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -57,19 +58,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-primary">PayTask</h1>
-              <Badge variant="destructive">Admin</Badge>
-            </div>
-            <Button variant="ghost" onClick={() => router.push("/")}>
-              Exit Admin
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-6 py-8">
         <div className="space-y-8">

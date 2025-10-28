@@ -49,6 +49,7 @@ export default function Hero() {
         {/* Hero Image with Rounded Corners */}
         <motion.div 
           className="relative rounded-3xl overflow-hidden shadow-2xl"
+          style={{ background: 'linear-gradient(135deg, #20A277 0%, #1A8260 50%, #167050 100%)' }}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -56,12 +57,12 @@ export default function Hero() {
           <img
             src="/person working.jpg"
             alt="Person working on laptop"
-            className="w-full h-[480px] lg:h-[580px] object-cover"
+            className="w-full h-[480px] lg:h-[580px] object-cover relative z-10"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/40 to-transparent lg:from-white/60 lg:via-white/40 lg:to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/40 to-transparent lg:from-white/60 lg:via-white/40 lg:to-transparent z-20"></div>
           
           {/* Content Overlay */}
-          <div className="absolute inset-0 flex items-center">
+          <div className="absolute inset-0 flex items-center z-30">
             <div className="max-w-2xl space-y-6 py-8 px-8 lg:px-12">
               {/* Badge with Shimmer Effect */}
               <motion.div 

@@ -14,15 +14,15 @@ import { Search, DollarSign, Clock, Users, Filter, Eye } from "lucide-react";
 const mockTasks = [
   {
     id: "1",
-    title: "Label images for AI training",
-    description: "Categorize images into predefined categories for machine learning model training",
-    category: "AI & Data",
-    reward: 0.50,
-    qty: 1000,
-    available: 847,
+    title: "Verify Restaurant Menu Prices",
+    description: "Visit the restaurant and verify that all menu prices match our database. Take photos of the menu items and confirm pricing accuracy. Must be completed during business hours (11am-9pm).",
+    category: "Data Verification",
+    reward: 5.00,
+    qty: 50,
+    available: 23,
     deadline: "2 days",
-    client: "TechCorp AI",
-    requirements: ["Basic English", "Attention to detail"],
+    client: "FoodieData Inc.",
+    requirements: ["Must have a smartphone with camera", "Must be located within 5km of restaurant", "Must complete during restaurant operating hours"],
   },
   {
     id: "2",

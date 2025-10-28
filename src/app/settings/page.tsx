@@ -95,259 +95,275 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Navigation />
 
-      <div className="container mx-auto px-6 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
-
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">
-              <User className="h-4 w-4 mr-2" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="security">
-              <Lock className="h-4 w-4 mr-2" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="notifications">
-              <Bell className="h-4 w-4 mr-2" />
-              Notifications
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your profile details and preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Skills</CardTitle>
-                <CardDescription>Add skills that match task requirements</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="pr-1">
-                      {skill}
-                      <button
-                        onClick={() => removeSkill(skill)}
-                        className="ml-2 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a skill"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                  />
-                  <Button onClick={addSkill}>Add</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Languages</CardTitle>
-                <CardDescription>Languages you can work in</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {languages.map((language) => (
-                    <Badge key={language} variant="secondary" className="pr-1">
-                      {language}
-                      <button
-                        onClick={() => removeLanguage(language)}
-                        className="ml-2 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a language"
-                    value={newLanguage}
-                    onChange={(e) => setNewLanguage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addLanguage()}
-                  />
-                  <Button onClick={addLanguage}>Add</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button onClick={handleProfileSave} className="w-full">
-              Save Profile Changes
-            </Button>
-          </TabsContent>
-
-          {/* Security Tab */}
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Update your password regularly for security</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button onClick={handlePasswordChange} className="w-full">
-              Update Security Settings
-            </Button>
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>Choose how you want to be notified</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Receive notifications via email
-                    </div>
-                  </div>
-                  <Switch
-                    checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Task Alerts</Label>
-                    <div className="text-sm text-muted-foreground">
-                      New tasks matching your skills
-                    </div>
-                  </div>
-                  <Switch
-                    checked={taskAlerts}
-                    onCheckedChange={setTaskAlerts}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Deadline Reminders</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Reminders 2 hours before deadline
-                    </div>
-                  </div>
-                  <Switch
-                    checked={deadlineReminders}
-                    onCheckedChange={setDeadlineReminders}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Review Notifications</Label>
-                    <div className="text-sm text-muted-foreground">
-                      When your work is reviewed
-                    </div>
-                  </div>
-                  <Switch
-                    checked={reviewNotifications}
-                    onCheckedChange={setReviewNotifications}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Payment Notifications</Label>
-                    <div className="text-sm text-muted-foreground">
-                      When you receive payments
-                    </div>
-                  </div>
-                  <Switch
-                    checked={paymentNotifications}
-                    onCheckedChange={setPaymentNotifications}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button onClick={handleNotificationsSave} className="w-full">
-              Save Notification Preferences
-            </Button>
-          </TabsContent>
-        </Tabs>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
+          <p className="text-gray-600">Manage your account preferences and security</p>
+        </div>
       </div>
+
+      <main className="flex-1 bg-gray-50">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          <Tabs defaultValue="profile" className="space-y-6">
+            <TabsList className="bg-white border border-gray-200 p-1 rounded-lg">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="security" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
+                <Lock className="h-4 w-4 mr-2" />
+                Security
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
+                <Bell className="h-4 w-4 mr-2" />
+                Notifications
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="space-y-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+                  <p className="text-sm text-gray-600 mt-1">Update your profile details and preferences</p>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-900">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bio" className="text-sm font-medium text-gray-900">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      rows={3}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-sm font-medium text-gray-900">Location</Label>
+                    <Input
+                      id="location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">Skills</h2>
+                  <p className="text-sm text-gray-600 mt-1">Add skills that match task requirements</p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((skill) => (
+                      <Badge key={skill} className="bg-gray-100 text-gray-700 pr-1">
+                        {skill}
+                        <button
+                          onClick={() => removeSkill(skill)}
+                          className="ml-2 hover:text-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a skill"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                    <Button onClick={addSkill} className="bg-[#20A277] hover:bg-[#1a8d66] text-white">Add</Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">Languages</h2>
+                  <p className="text-sm text-gray-600 mt-1">Languages you can work in</p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {languages.map((language) => (
+                      <Badge key={language} className="bg-gray-100 text-gray-700 pr-1">
+                        {language}
+                        <button
+                          onClick={() => removeLanguage(language)}
+                          className="ml-2 hover:text-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a language"
+                      value={newLanguage}
+                      onChange={(e) => setNewLanguage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addLanguage()}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                    <Button onClick={addLanguage} className="bg-[#20A277] hover:bg-[#1a8d66] text-white">Add</Button>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handleProfileSave} className="w-full bg-[#20A277] hover:bg-[#1a8d66] text-white">
+                Save Profile Changes
+              </Button>
+            </TabsContent>
+
+            {/* Security Tab */}
+            <TabsContent value="security" className="space-y-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">Change Password</h2>
+                  <p className="text-sm text-gray-600 mt-1">Update your password regularly for security</p>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="current-password" className="text-sm font-medium text-gray-900">Current Password</Label>
+                    <Input
+                      id="current-password"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password" className="text-sm font-medium text-gray-900">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="text-sm font-medium text-gray-900">Confirm New Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handlePasswordChange} className="w-full bg-[#20A277] hover:bg-[#1a8d66] text-white">
+                Update Security Settings
+              </Button>
+            </TabsContent>
+
+            {/* Notifications Tab */}
+            <TabsContent value="notifications" className="space-y-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">Notification Preferences</h2>
+                  <p className="text-sm text-gray-600 mt-1">Choose how you want to be notified</p>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-gray-900">Email Notifications</Label>
+                      <div className="text-sm text-gray-600">
+                        Receive notifications via email
+                      </div>
+                    </div>
+                    <Switch
+                      checked={emailNotifications}
+                      onCheckedChange={setEmailNotifications}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-gray-900">Task Alerts</Label>
+                      <div className="text-sm text-gray-600">
+                        New tasks matching your skills
+                      </div>
+                    </div>
+                    <Switch
+                      checked={taskAlerts}
+                      onCheckedChange={setTaskAlerts}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-gray-900">Deadline Reminders</Label>
+                      <div className="text-sm text-gray-600">
+                        Reminders 2 hours before deadline
+                      </div>
+                    </div>
+                    <Switch
+                      checked={deadlineReminders}
+                      onCheckedChange={setDeadlineReminders}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-gray-900">Review Notifications</Label>
+                      <div className="text-sm text-gray-600">
+                        When your work is reviewed
+                      </div>
+                    </div>
+                    <Switch
+                      checked={reviewNotifications}
+                      onCheckedChange={setReviewNotifications}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-gray-900">Payment Notifications</Label>
+                      <div className="text-sm text-gray-600">
+                        When you receive payments
+                      </div>
+                    </div>
+                    <Switch
+                      checked={paymentNotifications}
+                      onCheckedChange={setPaymentNotifications}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handleNotificationsSave} className="w-full bg-[#20A277] hover:bg-[#1a8d66] text-white">
+                Save Notification Preferences
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
     </div>
   );
 };

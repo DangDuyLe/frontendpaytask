@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { LogIn, ArrowLeft } from "lucide-react";
 
 export default function Login() {
@@ -18,17 +18,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 relative">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <Link href="/">
-          <Button variant="ghost" size="sm" className="mb-6">
+          <Button variant="ghost" size="sm" className="mb-6 hover:bg-white">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
           </Button>
@@ -37,37 +31,36 @@ export default function Login() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-4xl font-bold text-primary mb-3 tracking-tight">PayTask</h1>
+            <h1 className="text-4xl font-bold text-[#20A277] mb-3">PayTask</h1>
           </Link>
-          <p className="text-muted-foreground text-lg">Welcome back! Sign in to continue</p>
+          <p className="text-gray-600 text-lg">Welcome back! Sign in to continue</p>
         </div>
 
         {/* Login Card */}
-        <Card className="shadow-xl border-2">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-            <CardDescription className="text-base">
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
+              <p className="text-gray-600 mt-2">Enter your credentials to access your account</p>
+            </div>
+
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11"
+                  className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
-                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                  <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+                  <Link href="/forgot-password" className="text-xs text-[#20A277] hover:text-[#1a8a63]">
                     Forgot password?
                   </Link>
                 </div>
@@ -77,13 +70,13 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11"
+                  className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                 />
               </div>
 
               <Button 
                 onClick={handleLogin} 
-                className="w-full h-11 text-base font-semibold"
+                className="w-full h-11 text-base font-semibold bg-[#20A277] hover:bg-[#1a8a63] text-white"
                 size="lg"
               >
                 <LogIn className="mr-2 h-5 w-5" />
@@ -92,10 +85,10 @@ export default function Login() {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                  <span className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
+                  <span className="bg-white px-2 text-gray-500">
                     New to PayTask?
                   </span>
                 </div>
@@ -103,7 +96,7 @@ export default function Login() {
 
               <div className="text-center">
                 <Link href="/signup">
-                  <Button variant="outline" className="w-full h-11 font-semibold">
+                  <Button variant="outline" className="w-full h-11 font-semibold border-gray-300 hover:bg-gray-50">
                     Create an Account
                   </Button>
                 </Link>
@@ -113,13 +106,13 @@ export default function Login() {
         </Card>
 
         {/* Footer Info */}
-        <p className="text-center text-xs text-muted-foreground mt-8">
+        <p className="text-center text-xs text-gray-500 mt-8">
           By signing in, you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-foreground">
+          <Link href="/terms" className="text-[#20A277] hover:text-[#1a8a63]">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="underline hover:text-foreground">
+          <Link href="/privacy" className="text-[#20A277] hover:text-[#1a8a63]">
             Privacy Policy
           </Link>
         </p>
@@ -127,5 +120,3 @@ export default function Login() {
     </div>
   );
 }
-
-

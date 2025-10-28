@@ -155,162 +155,180 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Navigation />
 
-      <div className="container mx-auto px-6 py-8 max-w-5xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Profile Overview */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Avatar className="h-24 w-24 mx-auto mb-4">
-                    <AvatarImage src={profile.avatar} />
-                    <AvatarFallback className="text-2xl">{profile.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-2xl font-bold mb-1">{profile.name}</h2>
-                  <Badge className="mb-4">{profile.role}</Badge>
-                  
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <Star className="h-5 w-5 fill-accent text-accent" />
-                    <span className="text-xl font-bold">{profile.reputation}</span>
-                    <span className="text-muted-foreground text-sm">({profile.completedTasks} reviews)</span>
-                  </div>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
+          <p className="text-gray-600">Manage your personal information and settings</p>
+        </div>
+      </div>
 
-                  <Separator className="my-4" />
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {profile.location}
+      <main className="flex-1 bg-gray-50">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Profile Overview */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-8">
+                  <div className="text-center">
+                    <Avatar className="h-24 w-24 mx-auto mb-4 border-4 border-gray-200">
+                      <AvatarImage src={profile.avatar} />
+                      <AvatarFallback className="text-2xl bg-[#20A277] text-white">{profile.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h2>
+                    <Badge className="mb-4 bg-blue-100 text-blue-700">{profile.role}</Badge>
+                    
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                      <span className="text-xl font-bold text-gray-900">{profile.reputation}</span>
+                      <span className="text-gray-600 text-sm">({profile.completedTasks} reviews)</span>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      Joined {new Date(profile.joinedDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Statistics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Tasks Completed</span>
-                  <span className="font-bold">{profile.completedTasks}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Success Rate</span>
-                  <span className="font-bold text-accent">{profile.successRate}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total Earned</span>
-                  <span className="font-bold">${profile.totalEarned}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Avg. Completion</span>
-                  <span className="font-bold">{profile.averageCompletionTime}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                    <div className="h-px bg-gray-200 my-4" />
 
-          {/* Right Column - Detailed Info */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>About</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground leading-relaxed">{profile.bio}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Skills & Languages</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Skills</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Languages</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.languages.map((lang) => (
-                      <Badge key={lang} variant="secondary">{lang}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Availability</h4>
-                  <Badge>{profile.availability}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Achievements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {profile.achievements.map((achievement) => (
-                    <div key={achievement.name} className="flex items-start gap-3 p-3 bg-secondary/50 rounded-lg">
-                      <span className="text-2xl">{achievement.icon}</span>
-                      <div>
-                        <div className="font-semibold">{achievement.name}</div>
-                        <div className="text-xs text-muted-foreground">{achievement.description}</div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-gray-600 justify-center">
+                        <MapPin className="h-4 w-4" />
+                        {profile.location}
                       </div>
+                      <div className="flex items-center gap-2 text-gray-600 justify-center">
+                        <Calendar className="h-4 w-4" />
+                        Joined {new Date(profile.joinedDate).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleEditClick}
+                      className="w-full mt-6 bg-[#20A277] hover:bg-[#1a8d66] text-white"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Statistics</h3>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Tasks Completed</span>
+                    <span className="font-bold text-gray-900">{profile.completedTasks}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Success Rate</span>
+                    <span className="font-bold text-[#20A277]">{profile.successRate}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Total Earned</span>
+                    <span className="font-bold text-gray-900">${profile.totalEarned}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Avg. Completion</span>
+                    <span className="font-bold text-gray-900">{profile.averageCompletionTime}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Detailed Info */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900">About</h3>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-700 leading-relaxed">{profile.bio}</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900">Skills & Languages</h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.skills.map((skill) => (
+                        <Badge key={skill} className="bg-gray-100 text-gray-700 hover:bg-gray-200">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Languages</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.languages.map((lang) => (
+                        <Badge key={lang} className="bg-gray-100 text-gray-700 hover:bg-gray-200">{lang}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Availability</h4>
+                    <Badge className="bg-green-100 text-green-700">{profile.availability}</Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900">Achievements</h3>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {profile.achievements.map((achievement) => (
+                      <div key={achievement.name} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-2xl">{achievement.icon}</span>
+                        <div>
+                          <div className="font-semibold text-gray-900">{achievement.name}</div>
+                          <div className="text-xs text-gray-600">{achievement.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900">Recent Reviews ({profile.recentReviews.length})</h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  {profile.recentReviews.map((review) => (
+                    <div key={review.id}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <div className="font-semibold text-gray-900">{review.clientName}</div>
+                          <div className="flex items-center gap-1 mt-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-600">
+                          {new Date(review.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{review.comment}</p>
+                      {review.id !== profile.recentReviews[profile.recentReviews.length - 1].id && (
+                        <div className="h-px bg-gray-200 mt-6" />
+                      )}
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Reviews ({profile.recentReviews.length})</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {profile.recentReviews.map((review) => (
-                  <div key={review.id}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-semibold">{review.clientName}</div>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-3 w-3 ${i < review.rating ? 'fill-accent text-accent' : 'text-muted'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(review.date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{review.comment}</p>
-                    {review.id !== profile.recentReviews[profile.recentReviews.length - 1].id && (
-                      <Separator className="mt-4" />
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Edit Profile Dialog */}
       <AlertDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

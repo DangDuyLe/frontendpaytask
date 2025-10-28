@@ -166,201 +166,213 @@ function TaskDetailContent() {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       
-      <main className="flex-1 bg-secondary">
-        <div className="container mx-auto px-6 py-8 max-w-7xl">
-          {/* Back Button */}
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push(userRole === "client" ? "/client-dashboard" : "/worker-dashboard")}
-            className="mb-4"
+            className="mb-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          {/* Task Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <Badge className="mb-2">{task.category}</Badge>
-                  <CardTitle className="text-3xl mb-2">{task.title}</CardTitle>
-                  <CardDescription className="text-base">
-                    {task.quantityRemaining} of {task.quantity} positions available
-                  </CardDescription>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-accent">${task.reward}</div>
-                  <div className="text-sm text-muted-foreground">per task</div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <Badge className="mb-3 bg-blue-100 text-blue-700">{task.category}</Badge>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{task.title}</h1>
+              <p className="text-gray-600">
+                {task.quantityRemaining} of {task.quantity} positions available
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-[#20A277]">${task.reward}</div>
+              <div className="text-sm text-gray-600">per task</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="flex-1 bg-gray-50">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          <div className="space-y-6">
+            {/* Quick Info */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-orange-50 rounded-lg">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                  </div>
                   <div>
-                    <div className="text-sm font-medium">Deadline</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-gray-600">Deadline</div>
+                    <div className="font-semibold text-gray-900">
                       {new Date(task.deadline).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                  </div>
                   <div>
-                    <div className="text-sm font-medium">Est. Time</div>
-                    <div className="text-sm text-muted-foreground">{task.estimatedTime}</div>
+                    <div className="text-sm text-gray-600">Est. Time</div>
+                    <div className="font-semibold text-gray-900">{task.estimatedTime}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <MapPin className="h-5 w-5 text-purple-600" />
+                  </div>
                   <div>
-                    <div className="text-sm font-medium">Location</div>
-                    <div className="text-sm text-muted-foreground">On-site</div>
+                    <div className="text-sm text-gray-600">Location</div>
+                    <div className="font-semibold text-gray-900">On-site</div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Task Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground leading-relaxed">{task.description}</p>
-            </CardContent>
-          </Card>
-
-          {/* Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {task.requirements.map((req, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <Award className="h-4 w-4 text-accent mt-1 flex-shrink-0" />
-                    <span className="text-foreground">{req}</span>
-                  </li>
-                ))}
-              </ul>
-              <Separator className="my-4" />
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium mb-2">Required Skills</div>
-                  <div className="flex flex-wrap gap-2">
-                    {task.requiredSkills.map((skill) => (
-                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium mb-2">Languages</div>
-                  <div className="flex flex-wrap gap-2">
-                    {task.languages.map((lang) => (
-                      <Badge key={lang} variant="secondary">{lang}</Badge>
-                    ))}
-                  </div>
-                </div>
+            {/* Task Description */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Task Description</h2>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-6">
+                <p className="text-gray-700 leading-relaxed">{task.description}</p>
+              </div>
+            </div>
 
-          {/* Client Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Posted By</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={task.client.avatar} />
-                    <AvatarFallback>{task.client.name[0]}</AvatarFallback>
-                  </Avatar>
+            {/* Requirements */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Requirements</h2>
+              </div>
+              <div className="p-6 space-y-6">
+                <ul className="space-y-3">
+                  {task.requirements.map((req, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <Award className="h-5 w-5 text-[#20A277] mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">{req}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="h-px bg-gray-200" />
+                <div className="space-y-4">
                   <div>
-                    <div className="font-semibold">{task.client.name}</div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-accent text-accent" />
-                        {task.client.reputation} rating
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Award className="h-3 w-3" />
-                        {task.client.completedTasks} tasks completed
-                      </span>
+                    <div className="text-sm font-medium text-gray-900 mb-2">Required Skills</div>
+                    <div className="flex flex-wrap gap-2">
+                      {task.requiredSkills.map((skill) => (
+                        <Badge key={skill} className="bg-gray-100 text-gray-700 hover:bg-gray-200">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 mb-2">Languages</div>
+                    <div className="flex flex-wrap gap-2">
+                      {task.languages.map((lang) => (
+                        <Badge key={lang} className="bg-gray-100 text-gray-700 hover:bg-gray-200">{lang}</Badge>
+                      ))}
                     </div>
                   </div>
                 </div>
-                <Button variant="outline" onClick={() => router.push(`/profile/${task.client.id}`)}>
-                  View Profile
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Client Info */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Posted By</h2>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-14 w-14 border-2 border-gray-200">
+                      <AvatarImage src={task.client.avatar} />
+                      <AvatarFallback className="bg-[#20A277] text-white text-lg">{task.client.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold text-gray-900 mb-1">{task.client.name}</div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                          {task.client.reputation} rating
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Award className="h-4 w-4" />
+                          {task.client.completedTasks} tasks completed
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => router.push(`/profile/${task.client.id}`)}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    View Profile
+                  </Button>
+                </div>
+              </div>
+            </div>
 
           {/* Active Quantities (Client View Only) */}
           {userRole === "client" && task.activeQuantities && task.activeQuantities.length > 0 && (
             <>
-              <Card>
-                <CardHeader>
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>Assigned Quantities ({task.activeQuantities.length})</CardTitle>
-                      <CardDescription>Track progress of each worker assignment</CardDescription>
+                      <h2 className="text-xl font-semibold text-gray-900">Assigned Quantities ({task.activeQuantities.length})</h2>
+                      <p className="text-sm text-gray-600 mt-1">Track progress of each worker assignment</p>
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge className="bg-orange-100 text-orange-700">
                       {task.activeQuantities.filter(q => q.status === "in_review").length} Pending Review
                     </Badge>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg overflow-hidden">
+                </div>
+                <div className="p-6">
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
-                        <TableRow>
-                          <TableHead>Worker</TableHead>
-                          <TableHead>Quantity</TableHead>
-                          <TableHead>Progress</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Assigned</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="text-gray-900 font-semibold">Worker</TableHead>
+                          <TableHead className="text-gray-900 font-semibold">Quantity</TableHead>
+                          <TableHead className="text-gray-900 font-semibold">Progress</TableHead>
+                          <TableHead className="text-gray-900 font-semibold">Status</TableHead>
+                          <TableHead className="text-gray-900 font-semibold">Assigned</TableHead>
+                          <TableHead className="text-gray-900 font-semibold text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {task.activeQuantities.map((qty) => (
-                          <TableRow key={qty.qtyId}>
+                          <TableRow key={qty.qtyId} className="hover:bg-gray-50">
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
+                                <Avatar className="h-8 w-8 border border-gray-200">
                                   <AvatarImage src={qty.workerAvatar} />
-                                  <AvatarFallback>{qty.workerName[0]}</AvatarFallback>
+                                  <AvatarFallback className="bg-gray-200 text-gray-700 text-sm">{qty.workerName[0]}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <div className="font-medium text-sm">{qty.workerName}</div>
-                                  <div className="text-xs text-muted-foreground">★ {qty.workerRating}</div>
+                                  <div className="font-medium text-sm text-gray-900">{qty.workerName}</div>
+                                  <div className="text-xs text-gray-600">★ {qty.workerRating}</div>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm font-medium">{qty.total} items</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-sm font-medium text-gray-900">{qty.total} items</div>
+                              <div className="text-xs text-gray-600">
                                 ${(qty.total * task.reward).toFixed(2)}
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-secondary rounded-full h-2 w-20">
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5 w-20">
                                   <div 
-                                    className="bg-accent rounded-full h-2 transition-all"
+                                    className="bg-[#20A277] rounded-full h-1.5 transition-all"
                                     style={{ width: `${(qty.progress / qty.total) * 100}%` }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium">{qty.progress}/{qty.total}</span>
+                                <span className="text-xs font-medium text-gray-700">{qty.progress}/{qty.total}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -370,7 +382,7 @@ function TaskDetailContent() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-xs text-gray-600">
                                 {new Date(qty.assignedAt).toLocaleDateString()}
                               </div>
                             </TableCell>
@@ -380,6 +392,7 @@ function TaskDetailContent() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => router.push(`/task-flow/${task.id}/${qty.qtyId}?role=client`)}
+                                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
                                 >
                                   <Eye className="mr-1 h-3 w-3" />
                                   View
@@ -388,7 +401,7 @@ function TaskDetailContent() {
                                   <Button
                                     variant="default"
                                     size="sm"
-                                    className="bg-accent hover:bg-accent/90"
+                                    className="bg-[#20A277] hover:bg-[#1a8d66] text-white"
                                     onClick={() => handleQuickReview(qty.qtyId)}
                                   >
                                     <CheckCircle className="mr-1 h-3 w-3" />
@@ -402,24 +415,24 @@ function TaskDetailContent() {
                       </TableBody>
                     </Table>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Quick Review Dialog */}
               {reviewingQty && (
-                <Card className="border-accent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-accent" />
+                <div className="bg-white rounded-lg border-2 border-[#20A277] shadow-sm">
+                  <div className="p-6 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-[#20A277]" />
                       Quick Review: {task.activeQuantities.find(q => q.qtyId === reviewingQty)?.workerName}
-                    </CardTitle>
-                    <CardDescription>
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
                       Review submission for quantity {reviewingQty}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-secondary/50 p-3 rounded-lg text-sm">
-                      <p className="text-muted-foreground">
+                    </p>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg text-sm border border-blue-100">
+                      <p className="text-gray-700">
                         <strong>Note:</strong> For detailed review with file downloads and full submission details, 
                         click "Full Review" to open the complete task flow page.
                       </p>
@@ -428,7 +441,7 @@ function TaskDetailContent() {
                     <div className="flex gap-3">
                       <Button
                         variant={quickReviewDecision === "approve" ? "default" : "outline"}
-                        className={quickReviewDecision === "approve" ? "bg-accent hover:bg-accent/90" : ""}
+                        className={quickReviewDecision === "approve" ? "bg-[#20A277] hover:bg-[#1a8d66]" : "border-gray-300 text-gray-700 hover:bg-gray-50"}
                         onClick={() => setQuickReviewDecision("approve")}
                       >
                         <ThumbsUp className="mr-2 h-4 w-4" />
@@ -436,7 +449,7 @@ function TaskDetailContent() {
                       </Button>
                       <Button
                         variant={quickReviewDecision === "revision" ? "default" : "outline"}
-                        className={quickReviewDecision === "revision" ? "bg-warning hover:bg-warning/90" : ""}
+                        className={quickReviewDecision === "revision" ? "bg-orange-600 hover:bg-orange-700" : "border-gray-300 text-gray-700 hover:bg-gray-50"}
                         onClick={() => setQuickReviewDecision("revision")}
                       >
                         <RotateCcw className="mr-2 h-4 w-4" />
@@ -445,6 +458,7 @@ function TaskDetailContent() {
                       <Button
                         variant={quickReviewDecision === "reject" ? "destructive" : "outline"}
                         onClick={() => setQuickReviewDecision("reject")}
+                        className={quickReviewDecision !== "reject" ? "border-gray-300 text-gray-700 hover:bg-gray-50" : ""}
                       >
                         <ThumbsDown className="mr-2 h-4 w-4" />
                         Reject
@@ -454,19 +468,20 @@ function TaskDetailContent() {
                     {quickReviewDecision && (
                       <div className="space-y-3">
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Feedback for worker</label>
+                          <label className="text-sm font-medium text-gray-900">Feedback for worker</label>
                           <Textarea
                             placeholder="Add your feedback..."
                             value={quickReviewNote}
                             onChange={(e) => setQuickReviewNote(e.target.value)}
                             rows={4}
+                            className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                           />
                         </div>
                         
                         <div className="flex gap-3">
                           <Button 
                             onClick={handleSubmitQuickReview}
-                            className="bg-primary hover:bg-primary/90"
+                            className="bg-[#20A277] hover:bg-[#1a8d66] text-white"
                           >
                             Submit Review
                           </Button>
@@ -477,12 +492,14 @@ function TaskDetailContent() {
                               setQuickReviewDecision(null);
                               setQuickReviewNote("");
                             }}
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50"
                           >
                             Cancel
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => router.push(`/task-flow/${task.id}/${reviewingQty}`)}
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50"
                           >
                             <FileText className="mr-2 h-4 w-4" />
                             Full Review
@@ -490,39 +507,39 @@ function TaskDetailContent() {
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
             </>
           )}
 
           {/* Funding Section (Draft Tasks - Client View) */}
           {userRole === "client" && isDraft && (
-            <Card className="border-primary">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-primary" />
+            <div className="bg-white rounded-lg border-2 border-blue-600 shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-blue-600" />
                   Fund Task
-                </CardTitle>
-                <CardDescription>Review cost and publish your task</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">Review cost and publish your task</p>
+              </div>
+              <div className="p-6 space-y-6">
                 {/* Cost Summary */}
-                <div className="bg-secondary/50 p-6 rounded-lg space-y-3">
-                  <h3 className="font-semibold mb-3">Cost Breakdown</h3>
+                <div className="bg-gray-50 p-6 rounded-lg space-y-3 border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-3">Cost Breakdown</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Task Cost ({task.quantity} × ${task.reward})</span>
-                      <span className="font-medium">${totalTaskCost.toFixed(2)}</span>
+                      <span className="text-gray-600">Task Cost ({task.quantity} × ${task.reward})</span>
+                      <span className="font-medium text-gray-900">${totalTaskCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Platform Fee (5%)</span>
-                      <span className="font-medium">${platformFee.toFixed(2)}</span>
+                      <span className="text-gray-600">Platform Fee (5%)</span>
+                      <span className="font-medium text-gray-900">${platformFee.toFixed(2)}</span>
                     </div>
-                    <Separator />
+                    <div className="h-px bg-gray-200" />
                     <div className="flex justify-between items-center pt-2">
-                      <span className="text-lg font-semibold">Total Cost</span>
-                      <span className="text-3xl font-bold text-primary">${totalCost.toFixed(2)}</span>
+                      <span className="text-lg font-semibold text-gray-900">Total Cost</span>
+                      <span className="text-3xl font-bold text-blue-600">${totalCost.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -531,7 +548,7 @@ function TaskDetailContent() {
                 <div className="flex gap-3">
                   <Button 
                     onClick={handleFundTask} 
-                    className="flex-1 bg-primary hover:bg-primary/90"
+                    className="flex-1 bg-[#20A277] hover:bg-[#1a8d66] text-white"
                     size="lg"
                   >
                     <Wallet className="mr-2 h-4 w-4" />
@@ -541,16 +558,17 @@ function TaskDetailContent() {
                     variant="outline"
                     size="lg"
                     onClick={() => router.push("/client-dashboard")}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </Button>
                 </div>
 
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-xs text-gray-600 text-center">
                   Your task will be published immediately after successful payment
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Action Buttons (Worker View) */}
@@ -558,16 +576,22 @@ function TaskDetailContent() {
             <div className="flex gap-4">
               <Button 
                 size="lg" 
-                className="flex-1 bg-accent hover:bg-accent/90 text-white"
+                className="flex-1 bg-[#20A277] hover:bg-[#1a8d66] text-white"
                 onClick={handleAcceptTask}
               >
                 Accept Task
               </Button>
-              <Button variant="outline" size="lg" onClick={() => router.push("/discover-tasks")}>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={() => router.push("/discover-tasks")}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Back to Search
               </Button>
             </div>
           )}
+          </div>
         </div>
       </main>
 

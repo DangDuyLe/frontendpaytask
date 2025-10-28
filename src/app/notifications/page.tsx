@@ -80,24 +80,24 @@ export default function Notifications() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "payment":
-        return <DollarSign className="h-5 w-5 text-accent" />;
+        return <DollarSign className="h-5 w-5 text-[#20A277]" />;
       case "deadline":
-        return <Clock className="h-5 w-5 text-warning" />;
+        return <Clock className="h-5 w-5 text-orange-600" />;
       case "review":
-        return <Star className="h-5 w-5 text-info" />;
+        return <Star className="h-5 w-5 text-blue-600" />;
       case "task_alert":
-        return <Bell className="h-5 w-5 text-primary" />;
+        return <Bell className="h-5 w-5 text-purple-600" />;
       default:
-        return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
+        return <AlertCircle className="h-5 w-5 text-gray-600" />;
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Badge variant="destructive">Urgent</Badge>;
+        return <Badge className="bg-red-100 text-red-700">Urgent</Badge>;
       case "high":
-        return <Badge className="bg-warning text-white">High</Badge>;
+        return <Badge className="bg-orange-100 text-orange-700">High</Badge>;
       default:
         return null;
     }
@@ -121,77 +121,82 @@ export default function Notifications() {
   const readNotifications = notifications.filter(n => n.read);
 
   const NotificationCard = ({ notification }: { notification: typeof notifications[0] }) => (
-    <Card className={`${!notification.read ? 'border-primary' : ''} hover:shadow-md transition-shadow cursor-pointer`}>
-      <CardContent className="p-4">
+    <div className={`bg-white rounded-lg border ${!notification.read ? 'border-[#20A277]' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}>
+      <div className="p-4">
         <div className="flex items-start gap-4">
-          <div className={`p-2 rounded-full ${!notification.read ? 'bg-primary/10' : 'bg-secondary'}`}>
+          <div className={`p-2 rounded-full ${!notification.read ? 'bg-green-50' : 'bg-gray-100'}`}>
             {getNotificationIcon(notification.type)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-semibold text-sm">{notification.title}</h3>
+              <h3 className="font-semibold text-sm text-gray-900">{notification.title}</h3>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {getPriorityBadge(notification.priority)}
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                <span className="text-xs text-gray-600 whitespace-nowrap">
                   {formatTimestamp(notification.timestamp)}
                 </span>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">{notification.message}</p>
+            <p className="text-sm text-gray-600">{notification.message}</p>
           </div>
           {!notification.read && (
-            <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-[#20A277] flex-shrink-0 mt-2" />
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Navigation />
 
-      <div className="container mx-auto px-6 py-8 max-w-4xl">
-        <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Notifications</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
+              <p className="text-gray-600">
                 {unreadNotifications.length} unread notification{unreadNotifications.length !== 1 ? 's' : ''}
               </p>
             </div>
             {unreadNotifications.length > 0 && (
-              <Button variant="outline">
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
                 <Check className="h-4 w-4 mr-2" />
                 Mark all as read
               </Button>
             )}
           </div>
+        </div>
+      </div>
 
+      <main className="flex-1 bg-gray-50">
+        <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
           <Tabs defaultValue="all" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="all">
+            <TabsList className="bg-white border border-gray-200 p-1 rounded-lg">
+              <TabsTrigger value="all" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
                 All ({notifications.length})
               </TabsTrigger>
-              <TabsTrigger value="unread">
+              <TabsTrigger value="unread" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
                 Unread ({unreadNotifications.length})
               </TabsTrigger>
-              <TabsTrigger value="read">
+              <TabsTrigger value="read" className="data-[state=active]:bg-[#20A277] data-[state=active]:text-white">
                 Read ({readNotifications.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-3">
               {notifications.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">No notifications</h3>
-                    <p className="text-sm text-muted-foreground">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-12 text-center">
+                    <Bell className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No notifications</h3>
+                    <p className="text-sm text-gray-600">
                       You're all caught up! New notifications will appear here.
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ) : (
                 notifications.map((notification) => (
                   <NotificationCard key={notification.id} notification={notification} />
@@ -201,15 +206,15 @@ export default function Notifications() {
 
             <TabsContent value="unread" className="space-y-3">
               {unreadNotifications.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Check className="h-12 w-12 mx-auto mb-4 text-accent" />
-                    <h3 className="text-lg font-semibold mb-2">All caught up!</h3>
-                    <p className="text-sm text-muted-foreground">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-12 text-center">
+                    <Check className="h-12 w-12 mx-auto mb-4 text-[#20A277]" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">All caught up!</h3>
+                    <p className="text-sm text-gray-600">
                       You have no unread notifications.
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ) : (
                 unreadNotifications.map((notification) => (
                   <NotificationCard key={notification.id} notification={notification} />
@@ -219,15 +224,15 @@ export default function Notifications() {
 
             <TabsContent value="read" className="space-y-3">
               {readNotifications.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">No read notifications</h3>
-                    <p className="text-sm text-muted-foreground">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-12 text-center">
+                    <Bell className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No read notifications</h3>
+                    <p className="text-sm text-gray-600">
                       Read notifications will appear here.
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ) : (
                 readNotifications.map((notification) => (
                   <NotificationCard key={notification.id} notification={notification} />
@@ -236,7 +241,7 @@ export default function Notifications() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

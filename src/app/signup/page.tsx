@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Briefcase, User, ArrowLeft, UserPlus } from "lucide-react";
 
@@ -21,17 +21,11 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 relative">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-lg">
         {/* Back to Home */}
         <Link href="/">
-          <Button variant="ghost" size="sm" className="mb-6">
+          <Button variant="ghost" size="sm" className="mb-6 hover:bg-white">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
           </Button>
@@ -40,54 +34,53 @@ export default function Signup() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-4xl font-bold text-primary mb-3 tracking-tight">PayTask</h1>
+            <h1 className="text-4xl font-bold text-[#20A277] mb-3">PayTask</h1>
           </Link>
-          <p className="text-muted-foreground text-lg">Start your journey in 60 seconds</p>
+          <p className="text-gray-600 text-lg">Start your journey in 60 seconds</p>
         </div>
 
         {/* Signup Card */}
-        <Card className="shadow-xl border-2">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-            <CardDescription className="text-base">
-              Choose your role and fill in your details
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+              <p className="text-gray-600 mt-2">Choose your role and fill in your details</p>
+            </div>
+
             <div className="space-y-6">
               {/* Role Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">I want to:</Label>
+                <Label className="text-sm font-semibold text-gray-700">I want to:</Label>
                 <RadioGroup value={role} onValueChange={(value) => setRole(value as "client" | "worker")}>
-                  <div className={`flex items-center space-x-3 border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                  <div className={`flex items-center space-x-3 border-2 rounded-lg p-4 cursor-pointer transition-all ${
                     role === "worker" 
-                      ? "border-accent bg-accent/5 shadow-sm" 
-                      : "border-border hover:border-accent/50 hover:bg-accent/5"
+                      ? "border-[#20A277] bg-green-50" 
+                      : "border-gray-200 hover:border-gray-300"
                   }`}>
                     <RadioGroupItem value="worker" id="worker" className="mt-0" />
                     <Label htmlFor="worker" className="flex items-start cursor-pointer flex-1">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/10 mr-3">
-                        <User className="h-5 w-5 text-accent" />
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 mr-3">
+                        <User className="h-5 w-5 text-green-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-base mb-1">Work on Tasks</div>
-                        <div className="text-sm text-muted-foreground">Earn money by completing micro-tasks</div>
+                        <div className="font-semibold text-base text-gray-900">Work on Tasks</div>
+                        <div className="text-sm text-gray-600">Earn money by completing micro-tasks</div>
                       </div>
                     </Label>
                   </div>
-                  <div className={`flex items-center space-x-3 border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                  <div className={`flex items-center space-x-3 border-2 rounded-lg p-4 cursor-pointer transition-all ${
                     role === "client" 
-                      ? "border-primary bg-primary/5 shadow-sm" 
-                      : "border-border hover:border-primary/50 hover:bg-primary/5"
+                      ? "border-[#20A277] bg-green-50" 
+                      : "border-gray-200 hover:border-gray-300"
                   }`}>
                     <RadioGroupItem value="client" id="client" className="mt-0" />
                     <Label htmlFor="client" className="flex items-start cursor-pointer flex-1">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mr-3">
-                        <Briefcase className="h-5 w-5 text-primary" />
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 mr-3">
+                        <Briefcase className="h-5 w-5 text-blue-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-base mb-1">Post Tasks</div>
-                        <div className="text-sm text-muted-foreground">Get work done by skilled workers</div>
+                        <div className="font-semibold text-base text-gray-900">Post Tasks</div>
+                        <div className="text-sm text-gray-600">Get work done by skilled workers</div>
                       </div>
                     </Label>
                   </div>
@@ -97,40 +90,40 @@ export default function Signup() {
               {/* Form Fields */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-semibold">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-semibold text-gray-700">Username</Label>
                   <Input
                     id="username"
                     type="text"
                     placeholder="johndoe"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="h-11"
+                    className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11"
+                    className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     placeholder="At least 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-11"
+                    className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     Use 8+ characters with a mix of letters, numbers & symbols
                   </p>
                 </div>
@@ -138,7 +131,7 @@ export default function Signup() {
 
               <Button 
                 onClick={handleSignup} 
-                className="w-full h-11 text-base font-semibold"
+                className="w-full h-11 text-base font-semibold bg-[#20A277] hover:bg-[#1a8a63] text-white"
                 size="lg"
               >
                 <UserPlus className="mr-2 h-5 w-5" />
@@ -147,10 +140,10 @@ export default function Signup() {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                  <span className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
+                  <span className="bg-white px-2 text-gray-500">
                     Already have an account?
                   </span>
                 </div>
@@ -158,7 +151,7 @@ export default function Signup() {
 
               <div className="text-center">
                 <Link href="/login">
-                  <Button variant="outline" className="w-full h-11 font-semibold">
+                  <Button variant="outline" className="w-full h-11 font-semibold border-gray-300 hover:bg-gray-50">
                     Sign In Instead
                   </Button>
                 </Link>
@@ -168,13 +161,13 @@ export default function Signup() {
         </Card>
 
         {/* Footer Info */}
-        <p className="text-center text-xs text-muted-foreground mt-8">
+        <p className="text-center text-xs text-gray-500 mt-8">
           By creating an account, you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-foreground">
+          <Link href="/terms" className="text-[#20A277] hover:text-[#1a8a63]">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="underline hover:text-foreground">
+          <Link href="/privacy" className="text-[#20A277] hover:text-[#1a8a63]">
             Privacy Policy
           </Link>
         </p>
@@ -182,5 +175,3 @@ export default function Signup() {
     </div>
   );
 }
-
-

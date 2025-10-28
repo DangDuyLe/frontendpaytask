@@ -30,18 +30,18 @@ import {
 const getMockTaskFlow = (taskId: string, qtyId: string) => ({
   id: `flow-${qtyId}`,
   taskId: taskId,
-  taskTitle: "Label images for AI training",
+  taskTitle: "Verify Restaurant Menu Prices",
   qtyId: qtyId,
   workerId: "worker-123",
   workerName: "John Doe",
   workerAvatar: "/placeholder.svg",
   clientId: "client-456",
-  clientName: "TechCorp AI",
+  clientName: "FoodieData Inc.",
   clientAvatar: "/placeholder.svg",
   quantityAmount: 50,
   completed: 23,
-  reward: 0.50,
-  totalReward: 25.00, // 50 * 0.50
+  reward: 5.00,
+  totalReward: 250.00, // 50 * 5.00
   status: "in_progress", // assigned, in_progress, submitted, in_review, revision_requested, completed, rejected
   createdAt: "2025-10-26T08:00:00",
   acceptedAt: "2025-10-26T08:30:00",
@@ -49,7 +49,7 @@ const getMockTaskFlow = (taskId: string, qtyId: string) => ({
   submittedAt: null,
   deadline: "2025-10-30T18:00:00",
   
-  taskDescription: "Label 50 images with appropriate categories and tags. Each image must be reviewed carefully and tagged with relevant metadata.",
+  taskDescription: "Visit the restaurant and verify that all menu prices match our database. Take photos of the menu items and confirm pricing accuracy. Must be completed during business hours (11am-9pm).",
   taskRequirements: [
     "Must have a smartphone with camera",
     "Must be located within 5km of restaurant", 

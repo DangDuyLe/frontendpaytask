@@ -13,13 +13,13 @@ import { useRouter } from "next/navigation";
 const mockTasks = [
   {
     id: "1",
-    title: "Label images for AI training",
+    title: "Verify Restaurant Menu Prices",
     status: "open",
     created: "2 hours ago",
-    completed: 653,
-    total: 1000,
-    reward: 0.50,
-    pendingReview: 12,
+    completed: 27,
+    total: 50,
+    reward: 5.00,
+    pendingReview: 2,
     quantities: [
       { qtyId: "qty-review-1", workerId: "worker-123", workerName: "John Doe", status: "in_review" },
       { qtyId: "qty-2", workerId: "worker-124", workerName: "Jane Smith", status: "completed" },

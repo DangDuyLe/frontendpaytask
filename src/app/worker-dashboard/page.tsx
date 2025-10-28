@@ -12,15 +12,15 @@ import { useRouter } from "next/navigation";
 const mockAssignments = [
   {
     id: "1",
-    taskId: "task-1",
+    taskId: "1",
     qtyId: "qty-1",
-    title: "Label images for AI training",
+    title: "Verify Restaurant Menu Prices",
     status: "in_progress",
     progress: 23,
     total: 50,
-    reward: 0.50,
+    reward: 5.00,
     deadline: "4 hours",
-    client: "TechCorp AI",
+    client: "FoodieData Inc.",
   },
   {
     id: "2",

@@ -22,7 +22,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <Link href="/">
-          <Button variant="ghost" size="sm" className="mb-6 hover:bg-white">
+          <Button variant="ghost" size="sm" className="mb-6 text-gray-700 hover:bg-white hover:text-gray-900">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
           </Button>
@@ -30,9 +30,6 @@ export default function Login() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/">
-            <h1 className="text-4xl font-bold text-[#20A277] mb-3">PayTask</h1>
-          </Link>
           <p className="text-gray-600 text-lg">Welcome back! Sign in to continue</p>
         </div>
 
@@ -96,7 +93,7 @@ export default function Login() {
 
               <div className="text-center">
                 <Link href="/signup">
-                  <Button variant="outline" className="w-full h-11 font-semibold border-gray-300 hover:bg-gray-50">
+                  <Button variant="outline" className="w-full h-11 font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                     Create an Account
                   </Button>
                 </Link>

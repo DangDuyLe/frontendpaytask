@@ -11,6 +11,7 @@ export * from './users.api';
 export * from './stats.api';
 export * from './errorlogs.api';
 export * from './health.api';
+export * from './upload.api';
 
 // Re-export all API functions for convenience
 export { authApi } from './auth.api';
@@ -24,3 +25,4 @@ export { usersApi } from './users.api';
 export { statsApi } from './stats.api';
 export { errorLogsApi } from './errorlogs.api';
 export { healthApi } from './health.api';
+export { uploadApi } from './upload.api';

@@ -31,8 +31,16 @@ export const getHeaders = (includeAuth = false): HeadersInit => {
 
   if (includeAuth) {
     const token = getAuthToken();
+    console.log('🔑 getHeaders - Token check:', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      tokenPreview: token ? `${token.substring(0, 30)}...` : 'NO TOKEN',
+    });
+    
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.error('❌ NO TOKEN FOUND - User may not be logged in');
     }
   }
 
@@ -66,6 +74,12 @@ export const apiFetch = async <T = any>(
   const url = `${API_BASE_URL}${endpoint}`;
   
   try {
+    console.log('🌐 API Request:', {
+      url,
+      method: options.method || 'GET',
+      headers: options.headers,
+    });
+    
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -74,6 +88,14 @@ export const apiFetch = async <T = any>(
     });
 
     const data = await response.json();
+    
+    console.log('📦 API Response:', {
+      url,
+      status: response.status,
+      ok: response.ok,
+      dataKeys: Object.keys(data),
+      data: data,
+    });
 
     if (!response.ok) {
       throw data;
@@ -81,7 +103,7 @@ export const apiFetch = async <T = any>(
 
     return data;
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('❌ API Error:', error);
     throw error;
   }
 };

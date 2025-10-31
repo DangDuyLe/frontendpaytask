@@ -26,9 +26,37 @@ import {
   Download,
   Loader2
 } from "lucide-react";
-import { tasksApi, submissionsApi, assignmentsApi, type Task } from "@/api";
+import { tasksApi, submissionsApi, assignmentsApi, uploadApi, reviewsApi, ratingsApi, type Task } from "@/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+
+// Add type imports
+type Assignment = {
+  id: string;
+  taskId: string;
+  workerId: string;
+  status: string;
+  startedAt: string | null;
+  dueAt: string | null;
+  createdAt: string;
+  submission?: {
+    id: string;
+    status: string;
+    submittedAt: string;
+    payloadUrl?: string;
+    payloadHash?: string;
+  } | null;
+};
+
+type Submission = {
+  id: string;
+  assignmentId: string;
+  payloadUrl: string;
+  payloadHash: string;
+  status: string;
+  submittedAt: string;
+  qaFlags?: any;
+};
 
 export default function TaskFlowDetail() {
   const router = useRouter();
@@ -44,6 +72,9 @@ export default function TaskFlowDetail() {
   const [userRole, setUserRole] = useState<"client" | "worker">(roleParam || "worker");
   const [loading, setLoading] = useState(true);
   const [taskDetail, setTaskDetail] = useState<Task | null>(null);
+  const [assignmentDetail, setAssignmentDetail] = useState<Assignment | null>(null);
+  const [submissionDetail, setSubmissionDetail] = useState<Submission | null>(null);
+  const [workerRating, setWorkerRating] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   
   // Submission states
@@ -54,13 +85,180 @@ export default function TaskFlowDetail() {
   // Review states (for client)
   const [reviewDecision, setReviewDecision] = useState<"approve" | "revision" | "reject" | null>(null);
   const [reviewNote, setReviewNote] = useState("");
+  const [reviewing, setReviewing] = useState(false);
 
   // Fetch task detail on mount
   useEffect(() => {
-    if (taskId) {
-      fetchTaskDetail();
+    if (taskId && assignmentId) {
+      fetchAllData();
     }
-  }, [taskId]);
+  }, [taskId, assignmentId]);
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('🔄 STATE UPDATE:', {
+      taskDetail: !!taskDetail,
+      assignmentDetail: !!assignmentDetail,
+      submissionDetail: !!submissionDetail,
+      submissionId: submissionDetail?.id,
+      submissionStatus: submissionDetail?.status,
+    });
+  }, [taskDetail, assignmentDetail, submissionDetail]);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔍 START FETCH - Params:', { taskId, assignmentId, userRole });
+      
+      // Fetch task detail (includes assignments)
+      const taskResponse = await tasksApi.getTaskById(taskId);
+      
+      console.log('📦 Task Response:', taskResponse);
+      
+      if (taskResponse.success) {
+        setTaskDetail(taskResponse.data);
+        
+        console.log('✅ Task data loaded');
+        
+        // Find the specific assignment from task's assignments (if available)
+        const taskData = taskResponse.data as any;
+        
+        console.log('📋 Task has assignments?', !!taskData.assignments);
+        console.log('📋 Assignments array:', taskData.assignments);
+        
+        if (taskData.assignments && taskData.assignments.length > 0) {
+          console.log('✅ Found assignments:', taskData.assignments.length);
+          
+          // Log each assignment
+          taskData.assignments.forEach((a: any, index: number) => {
+            console.log(`Assignment ${index + 1}:`, {
+              id: a.id,
+              status: a.status,
+              hasSubmission: !!a.submission,
+              submissionId: a.submission?.id,
+            });
+          });
+          
+          // For CLIENT: Find ANY submission related to this task
+          if (userRole === "client") {
+            console.log('👔 CLIENT MODE - Finding any submission...');
+            
+            // First try to find the specific assignment if assignmentId provided
+            let targetAssignment = taskData.assignments.find((a: any) => a.id === assignmentId);
+            
+            console.log('🔍 Specific assignment found?', !!targetAssignment);
+            console.log('🔍 Assignment has submission?', !!targetAssignment?.submission);
+            
+            // If not found or no assignmentId, find first assignment with submission
+            if (!targetAssignment || !targetAssignment.submission) {
+              console.log('🔍 Searching for ANY assignment with submission...');
+              targetAssignment = taskData.assignments.find((a: any) => a.submission);
+              console.log('🔍 Found assignment with submission?', !!targetAssignment);
+            }
+            
+            if (targetAssignment) {
+              setAssignmentDetail(targetAssignment);
+              console.log('✅ Assignment set:', targetAssignment.id);
+              
+              // If assignment has submission, fetch full details
+              if (targetAssignment.submission?.id) {
+                console.log('📄 Fetching submission ID:', targetAssignment.submission.id);
+                try {
+                  const submissionResponse = await submissionsApi.getSubmissionById(
+                    targetAssignment.submission.id
+                  );
+                  console.log('📦 Submission Response:', submissionResponse);
+                  
+                  if (submissionResponse.success) {
+                    console.log('✅✅✅ SUBMISSION DATA FETCHED:', submissionResponse.data);
+                    setSubmissionDetail(submissionResponse.data);
+                    console.log('✅✅✅ setSubmissionDetail() CALLED');
+                  } else {
+                    console.error('⚠️ Submission fetch failed:', submissionResponse);
+                  }
+                } catch (err) {
+                  console.error('❌ ERROR fetching submission:', err);
+                }
+              } else {
+                console.warn('⚠️ Assignment exists but has NO submission object');
+              }
+            } else {
+              console.error('❌ NO assignment found (neither specific nor with submission)');
+            }
+          } else {
+            console.log('👷 WORKER MODE - Using specific assignmentId...');
+            
+            // For WORKER: Use the specific assignmentId
+            const assignment = taskData.assignments.find(
+              (a: any) => a.id === assignmentId
+            );
+            
+            console.log('🔍 Assignment found?', !!assignment);
+            
+            if (assignment) {
+              setAssignmentDetail(assignment);
+              console.log('✅ Assignment set:', assignment.id);
+              
+              // If assignment has submission, try to fetch submission details
+              if (assignment.submission?.id) {
+                console.log('📄 Fetching submission ID:', assignment.submission.id);
+                try {
+                  const submissionResponse = await submissionsApi.getSubmissionById(
+                    assignment.submission.id
+                  );
+                  console.log('📦 Submission Response:', submissionResponse);
+                  
+                  if (submissionResponse.success) {
+                    console.log('✅✅✅ SUBMISSION DATA FETCHED:', submissionResponse.data);
+                    setSubmissionDetail(submissionResponse.data);
+                    console.log('✅✅✅ setSubmissionDetail() CALLED');
+                  } else {
+                    console.error('⚠️ Submission fetch failed:', submissionResponse);
+                  }
+                } catch (err) {
+                  console.error('❌ ERROR fetching submission:', err);
+                }
+              } else {
+                console.warn('⚠️ Assignment has NO submission yet');
+              }
+            } else {
+              console.error('❌ Assignment NOT found in task assignments');
+            }
+          }
+        } else {
+          console.error('❌ No assignments array in task data');
+        }
+      } else {
+        console.error('❌ Task fetch failed');
+      }
+
+      // Fetch worker rating if available and viewing as client
+      if (userRole === "client" && assignmentDetail?.workerId) {
+        try {
+          const ratingResponse = await ratingsApi.getRatingStats(
+            assignmentDetail.workerId
+          );
+          if (ratingResponse.success) {
+            setWorkerRating(ratingResponse.data);
+          }
+        } catch (err) {
+          console.log('Worker rating not available');
+        }
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching data:', err);
+      setError(err?.error?.message || 'Failed to load details');
+      toast({
+        title: "Error",
+        description: "Failed to load details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchTaskDetail = async () => {
     try {
@@ -89,9 +287,79 @@ export default function TaskFlowDetail() {
     setReviewDecision(decision);
   };
 
-  const handleSubmitReview = () => {
-    console.log("Review decision:", reviewDecision, "Note:", reviewNote);
-    router.push("/client-dashboard");
+  const handleSubmitReview = async () => {
+    if (!reviewDecision) {
+      toast({
+        title: "Error",
+        description: "Please select a review decision",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!submissionDetail?.id) {
+      toast({
+        title: "Error",
+        description: "No submission found to review",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setReviewing(true);
+
+      if (reviewDecision === "approve") {
+        const response = await reviewsApi.acceptSubmission({
+          submissionId: submissionDetail.id,
+          feedback: reviewNote || undefined,
+        });
+
+        if (response.success) {
+          toast({
+            title: "Success!",
+            description: "Submission approved and worker will be paid",
+          });
+          setTimeout(() => router.push("/client-dashboard"), 1500);
+        }
+      } else if (reviewDecision === "reject") {
+        const response = await reviewsApi.rejectSubmission({
+          submissionId: submissionDetail.id,
+          feedback: reviewNote,
+        });
+
+        if (response.success) {
+          toast({
+            title: "Submission Rejected",
+            description: "Worker has been notified",
+          });
+          setTimeout(() => router.push("/client-dashboard"), 1500);
+        }
+      } else {
+        // Request fix
+        const response = await submissionsApi.requestFix(
+          submissionDetail.id,
+          { feedback: reviewNote }
+        );
+
+        if (response.success) {
+          toast({
+            title: "Revision Requested",
+            description: "Worker will resubmit the work",
+          });
+          setTimeout(() => router.push("/client-dashboard"), 1500);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      toast({
+        title: "Error",
+        description: err?.error?.message || 'Failed to submit review',
+        variant: "destructive",
+      });
+    } finally {
+      setReviewing(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,19 +391,33 @@ export default function TaskFlowDetail() {
     try {
       setSubmitting(true);
       
-      // TODO: Upload files to S3 or file storage service
-      // For now, we'll create a mock payload URL
-      const payloadUrl = "https://example.com/submissions/" + assignmentId;
-      const payloadHash = "mock-hash-" + Date.now();
+      // OPTION 1: Upload files to server (ACTIVE - using real file upload)
+      const uploadResponse = await uploadApi.uploadFiles(submissionFiles);
+      
+      if (!uploadResponse.success || uploadResponse.files.length === 0) {
+        throw new Error('Failed to upload files');
+      }
+
+      // Convert relative path to full URL for validation
+      // Backend already returns URL with /api prefix (e.g., /api/uploads/files/xxx.pdf)
+      // So we only need the base domain without /api
+      const baseUrl = 'http://localhost:3000';
+      const payloadUrl = `${baseUrl}${uploadResponse.files[0].url}`;
+      const payloadHash = uploadResponse.files.map(f => f.filename).join('-');
+      
+      console.log("Files uploaded:", uploadResponse.files);
+      console.log("Full payloadUrl:", payloadUrl); // Should be: http://localhost:3000/api/uploads/files/xxx.jpg
+      console.log("Submitting with files:", submissionFiles.map(f => ({ name: f.name, size: f.size })));
+      console.log("Notes:", submissionNotes);
       
       const response = await submissionsApi.createSubmission({
         assignmentId: assignmentId,
         payloadUrl: payloadUrl,
         payloadHash: payloadHash,
         metadata: {
-          fileSize: submissionFiles.reduce((sum, file) => sum + file.size, 0),
-          fileName: submissionFiles[0].name,
-          mimeType: submissionFiles[0].type,
+          fileSize: uploadResponse.files.reduce((sum, file) => sum + file.size, 0),
+          fileName: uploadResponse.files.map(f => f.originalName).join(", "),
+          mimeType: uploadResponse.files[0].mimeType
         }
       });
 
@@ -144,7 +426,11 @@ export default function TaskFlowDetail() {
           title: "Success!",
           description: "Your work has been submitted for review",
         });
-        router.push("/worker-dashboard");
+        
+        // Wait a bit before redirecting to show the success message
+        setTimeout(() => {
+          router.push("/worker-dashboard");
+        }, 1500);
       }
     } catch (err: any) {
       console.error('Error submitting work:', err);
@@ -219,6 +505,42 @@ export default function TaskFlowDetail() {
       
       <main className="flex-1">
         <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-12">
+          {/* Debug Panel - Development Only */}
+          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="h-5 w-5 text-yellow-700" />
+              <h3 className="font-bold text-yellow-900">Debug Info (Dev Mode)</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-xs">
+              <div>
+                <div className="font-semibold text-yellow-800 mb-1">Task Detail:</div>
+                <div className={taskDetail ? "text-green-700" : "text-red-700"}>
+                  {taskDetail ? "✓ Loaded" : "✗ Not Loaded"}
+                </div>
+              </div>
+              <div>
+                <div className="font-semibold text-yellow-800 mb-1">Assignment Detail:</div>
+                <div className={assignmentDetail ? "text-green-700" : "text-red-700"}>
+                  {assignmentDetail ? `✓ Loaded (${assignmentDetail.id})` : "✗ Not Loaded"}
+                </div>
+              </div>
+              <div>
+                <div className="font-semibold text-yellow-800 mb-1">Submission Detail:</div>
+                <div className={submissionDetail ? "text-green-700 font-bold" : "text-red-700 font-bold"}>
+                  {submissionDetail ? `✓ LOADED (${submissionDetail.id})` : "✗ NOT LOADED"}
+                </div>
+              </div>
+            </div>
+            {submissionDetail && (
+              <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded text-xs">
+                <div className="font-semibold text-green-900">Submission Data:</div>
+                <pre className="text-green-800 mt-1 overflow-auto max-h-32">
+                  {JSON.stringify(submissionDetail, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+
           {/* Header */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
             <div className="flex justify-between items-start">
@@ -269,9 +591,16 @@ export default function TaskFlowDetail() {
                   </div>
 
                   <Tabs defaultValue="description" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+                    <TabsList className={`grid w-full ${userRole === 'client' ? 'grid-cols-3' : 'grid-cols-2'} bg-gray-100`}>
                       <TabsTrigger value="description" className="data-[state=active]:bg-white">Description</TabsTrigger>
-                      <TabsTrigger value="submit" className="data-[state=active]:bg-white">Submit Work</TabsTrigger>
+                      {userRole === "worker" && (
+                        <TabsTrigger value="submit" className="data-[state=active]:bg-white">Submit Work</TabsTrigger>
+                      )}
+                      {userRole === "client" && (
+                        <TabsTrigger value="review" className="data-[state=active]:bg-white">
+                          Review Submission {submissionDetail && <span className="ml-1">●</span>}
+                        </TabsTrigger>
+                      )}
                     </TabsList>
 
                     {/* Description Tab */}
@@ -385,6 +714,254 @@ export default function TaskFlowDetail() {
                         )}
                       </Button>
                     </TabsContent>
+
+                    {/* Review Tab (for Client) */}
+                    {userRole === "client" && (
+                      <TabsContent value="review" className="space-y-6 mt-6">
+                        {submissionDetail ? (
+                          <>
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <FileText className="h-5 w-5 text-blue-600" />
+                                <h4 className="font-semibold text-blue-900">Review Worker's Submission</h4>
+                              </div>
+                              <p className="text-sm text-blue-700">
+                                Review the submitted work carefully before accepting or rejecting.
+                              </p>
+                            </div>
+
+                            {/* Submission Details */}
+                            <div className="border border-gray-200 rounded-lg bg-white">
+                              <div className="p-4 bg-gray-50 border-b border-gray-200">
+                                <div className="flex justify-between items-center">
+                                  <h5 className="font-semibold text-gray-900">Submission Details</h5>
+                                  <Badge className={getStatusColor(submissionDetail.status)}>
+                                    {submissionDetail.status}
+                                  </Badge>
+                                </div>
+                              </div>
+                              
+                              <div className="p-4 space-y-4">
+                                {/* Submission Info */}
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-gray-600">Submitted At:</span>
+                                    <div className="font-medium text-gray-900 mt-1">
+                                      {new Date(submissionDetail.submittedAt).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">File Hash:</span>
+                                    <div className="font-mono text-xs text-gray-900 mt-1 truncate">
+                                      {submissionDetail.payloadHash}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Download Files Button */}
+                                {submissionDetail.payloadUrl && (
+                                  <div>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full justify-center border-2 border-[#20A277] text-[#20A277] hover:bg-[#20A277] hover:text-white"
+                                      onClick={() => window.open(submissionDetail.payloadUrl, '_blank')}
+                                    >
+                                      <Download className="mr-2 h-4 w-4" />
+                                      Download & Review Submitted Files
+                                    </Button>
+                                  </div>
+                                )}
+
+                                {/* QA Flags if available */}
+                                {submissionDetail.qaFlags && (
+                                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                                    <div className="text-xs font-semibold text-gray-700 mb-2">Quality Checks:</div>
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      <div className="flex items-center gap-2">
+                                        {submissionDetail.qaFlags.checks?.completeness ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <XCircle className="h-3 w-3 text-red-600" />
+                                        )}
+                                        <span>Completeness</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {submissionDetail.qaFlags.checks?.format ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <XCircle className="h-3 w-3 text-red-600" />
+                                        )}
+                                        <span>Valid Format</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {!submissionDetail.qaFlags.checks?.duplicate ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <XCircle className="h-3 w-3 text-red-600" />
+                                        )}
+                                        <span>Not Duplicate</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {submissionDetail.qaFlags.checks?.size ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <XCircle className="h-3 w-3 text-red-600" />
+                                        )}
+                                        <span>Size OK</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Feedback Input */}
+                            <div className="space-y-2">
+                              <Label htmlFor="review-note" className="text-sm font-semibold text-gray-700">
+                                Feedback (Optional for Accept, Required for Reject)
+                              </Label>
+                              <Textarea
+                                id="review-note"
+                                placeholder="Provide feedback to the worker..."
+                                value={reviewNote}
+                                onChange={(e) => setReviewNote(e.target.value)}
+                                rows={4}
+                                className="border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
+                              />
+                            </div>
+
+                            {/* Accept & Reject Buttons */}
+                            <div className="grid grid-cols-2 gap-4">
+                              {/* Accept Button */}
+                              <Button
+                                size="lg"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={async () => {
+                                  try {
+                                    setReviewing(true);
+                                    const response = await reviewsApi.acceptSubmission({
+                                      submissionId: submissionDetail.id,
+                                      feedback: reviewNote || undefined,
+                                    });
+
+                                    if (response.success) {
+                                      toast({
+                                        title: "✅ Submission Accepted!",
+                                        description: `Worker will receive $${reward.toFixed(2)}`,
+                                      });
+                                      setTimeout(() => router.push("/client-dashboard"), 1500);
+                                    }
+                                  } catch (err: any) {
+                                    console.error('Error accepting submission:', err);
+                                    toast({
+                                      title: "Error",
+                                      description: err?.error?.message || 'Failed to accept submission',
+                                      variant: "destructive",
+                                    });
+                                  } finally {
+                                    setReviewing(false);
+                                  }
+                                }}
+                                disabled={reviewing}
+                              >
+                                {reviewing ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="mr-2 h-5 w-5" />
+                                    Accept & Pay
+                                  </>
+                                )}
+                              </Button>
+
+                              {/* Reject Button */}
+                              <Button
+                                size="lg"
+                                variant="destructive"
+                                className="bg-red-600 hover:bg-red-700"
+                                onClick={async () => {
+                                  if (!reviewNote.trim()) {
+                                    toast({
+                                      title: "Feedback Required",
+                                      description: "Please provide feedback explaining why you're rejecting this submission",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+
+                                  try {
+                                    setReviewing(true);
+                                    const response = await reviewsApi.rejectSubmission({
+                                      submissionId: submissionDetail.id,
+                                      feedback: reviewNote,
+                                    });
+
+                                    if (response.success) {
+                                      toast({
+                                        title: "❌ Submission Rejected",
+                                        description: "Worker has been notified",
+                                      });
+                                      setTimeout(() => router.push("/client-dashboard"), 1500);
+                                    }
+                                  } catch (err: any) {
+                                    console.error('Error rejecting submission:', err);
+                                    toast({
+                                      title: "Error",
+                                      description: err?.error?.message || 'Failed to reject submission',
+                                      variant: "destructive",
+                                    });
+                                  } finally {
+                                    setReviewing(false);
+                                  }
+                                }}
+                                disabled={reviewing}
+                              >
+                                {reviewing ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="mr-2 h-5 w-5" />
+                                    Reject
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+
+                            {/* Payment Notice */}
+                            <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="text-sm text-green-800">
+                                💰 <strong>${reward.toFixed(2)}</strong> will be transferred to worker upon acceptance
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          /* No Submission Yet */
+                          <div className="text-center py-12">
+                            <div className="flex justify-center mb-4">
+                              <div className="bg-gray-100 rounded-full p-6">
+                                <Clock className="h-12 w-12 text-gray-400" />
+                              </div>
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                              No Submission Yet
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-4">
+                              The worker hasn't submitted their work yet. Please check back later.
+                            </p>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                              <AlertCircle className="h-4 w-4" />
+                              Waiting for worker to complete the task
+                            </div>
+                          </div>
+                        )}
+                      </TabsContent>
+                    )}
                   </Tabs>
                 </CardContent>
               </Card>
@@ -461,6 +1038,260 @@ export default function TaskFlowDetail() {
                         <div className="text-sm text-gray-600">ID: {taskDetail.client.id}</div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Assignment Details */}
+              {assignmentDetail && (
+                <Card className="border-gray-200 shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Assignment Details</h3>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <Badge className={getStatusColor(assignmentDetail.status)}>
+                          {assignmentDetail.status}
+                        </Badge>
+                      </div>
+                      {assignmentDetail.startedAt && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Started:</span>
+                          <span className="text-gray-900">
+                            {new Date(assignmentDetail.startedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {assignmentDetail.dueAt && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Due:</span>
+                          <span className="text-gray-900">
+                            {new Date(assignmentDetail.dueAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Submission Details Card */}
+              {submissionDetail && (
+                <Card className="border-gray-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">Worker Submission</h3>
+                      <Badge className={getStatusColor(submissionDetail.status)}>
+                        {submissionDetail.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Submitted Time */}
+                      <div className="bg-white p-3 rounded-lg border border-blue-100">
+                        <div className="text-xs text-gray-600 mb-1">Submitted At</div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {new Date(submissionDetail.submittedAt).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {Math.floor((Date.now() - new Date(submissionDetail.submittedAt).getTime()) / (1000 * 60 * 60))} hours ago
+                        </div>
+                      </div>
+
+                      {/* File Hash */}
+                      <div className="bg-white p-3 rounded-lg border border-blue-100">
+                        <div className="text-xs text-gray-600 mb-1">File Hash</div>
+                        <div className="font-mono text-xs text-gray-900 break-all">
+                          {submissionDetail.payloadHash}
+                        </div>
+                      </div>
+
+                      {/* Download Button */}
+                      {submissionDetail.payloadUrl && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full justify-center border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white font-semibold"
+                          onClick={() => window.open(submissionDetail.payloadUrl, '_blank')}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Files
+                        </Button>
+                      )}
+
+                      {/* QA Checks */}
+                      {submissionDetail.qaFlags && (
+                        <div className="bg-white p-3 rounded-lg border border-blue-100">
+                          <div className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <CheckCircle className="h-3 w-3 text-green-600" />
+                            Quality Checks
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">Completeness:</span>
+                              {submissionDetail.qaFlags.checks?.completeness ? (
+                                <Badge className="bg-green-100 text-green-700 text-xs">✓ Pass</Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 text-xs">✗ Fail</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">Format:</span>
+                              {submissionDetail.qaFlags.checks?.format ? (
+                                <Badge className="bg-green-100 text-green-700 text-xs">✓ Pass</Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 text-xs">✗ Fail</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">No Duplicate:</span>
+                              {!submissionDetail.qaFlags.checks?.duplicate ? (
+                                <Badge className="bg-green-100 text-green-700 text-xs">✓ Pass</Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 text-xs">✗ Fail</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">Size:</span>
+                              {submissionDetail.qaFlags.checks?.size ? (
+                                <Badge className="bg-green-100 text-green-700 text-xs">✓ Pass</Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 text-xs">✗ Fail</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Overall Status */}
+                      <div className={`p-3 rounded-lg border-2 ${
+                        submissionDetail.qaFlags?.passed 
+                          ? 'bg-green-50 border-green-200' 
+                          : 'bg-yellow-50 border-yellow-200'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {submissionDetail.qaFlags?.passed ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                          )}
+                          <span className={`text-sm font-semibold ${
+                            submissionDetail.qaFlags?.passed ? 'text-green-800' : 'text-yellow-800'
+                          }`}>
+                            {submissionDetail.qaFlags?.passed ? 'All Checks Passed' : 'Pending Review'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Submission Status */}
+              {submissionDetail && (
+                <Card className="border-gray-200 shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Submission Status</h3>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <Badge className={getStatusColor(submissionDetail.status)}>
+                          {submissionDetail.status}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Submitted:</span>
+                        <span className="text-gray-900">
+                          {new Date(submissionDetail.submittedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {submissionDetail.payloadUrl && (
+                        <div>
+                          <span className="text-gray-600 block mb-1">Files:</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full justify-start text-xs"
+                            onClick={() => window.open(submissionDetail.payloadUrl, '_blank')}
+                          >
+                            <Download className="mr-2 h-3 w-3" />
+                            Download Submission
+                          </Button>
+                        </div>
+                      )}
+                      {submissionDetail.qaFlags && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded border border-gray-200">
+                          <div className="text-xs font-semibold text-gray-700 mb-2">QA Checks:</div>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-2">
+                              {submissionDetail.qaFlags.checks?.completeness ? (
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-red-600" />
+                              )}
+                              <span>Completeness</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {submissionDetail.qaFlags.checks?.format ? (
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-red-600" />
+                              )}
+                              <span>Format</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {submissionDetail.qaFlags.checks?.duplicate ? (
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-red-600" />
+                              )}
+                              <span>No Duplicate</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Worker Rating (for client view) */}
+              {userRole === "client" && workerRating && (
+                <Card className="border-gray-200 shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Worker Rating</h3>
+                    
+                    <div className="text-center mb-4">
+                      <div className="text-3xl font-bold text-[#20A277]">
+                        {workerRating.averageScore.toFixed(1)} ⭐
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Based on {workerRating.totalRatings} ratings
+                      </div>
+                    </div>
+
+                    {workerRating.ratingDistribution && (
+                      <div className="space-y-2 text-xs">
+                        {[5, 4, 3, 2, 1].map((star) => (
+                          <div key={star} className="flex items-center gap-2">
+                            <span className="w-4">{star}★</span>
+                            <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
+                              <div
+                                className="h-full bg-[#20A277]"
+                                style={{
+                                  width: `${(workerRating.ratingDistribution[star] / workerRating.totalRatings) * 100}%`
+                                }}
+                              />
+                            </div>
+                            <span className="w-8 text-right text-gray-600">
+                              {workerRating.ratingDistribution[star]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}

@@ -16,12 +16,12 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function ClientDashboard() {
   const router = useRouter();
   const { userId, isAuthenticated } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]); // Store all tasks
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]); // Filtered tasks for display
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [displayLimit, setDisplayLimit] = useState(5); // Initially show 5 tasks
-  const [totalTasks, setTotalTasks] = useState(0); // Total tasks from API
   const [stats, setStats] = useState({
     totalSpent: 0,
     activeTasks: 0,
@@ -29,92 +29,121 @@ export default function ClientDashboard() {
     pendingReviews: 0,
   });
 
-  // Fetch tasks from API
+  // Fetch all tasks from API (once on mount and every 5 seconds)
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
-    if (userId) {
-      setDisplayLimit(5); // Reset display limit when tab changes
-      fetchTasks();
-    }
-  }, [activeTab, userId, isAuthenticated]);
+    if (!userId) return;
+    
+    // Initial fetch
+    fetchAllTasks();
+    
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing tasks...');
+      fetchAllTasks();
+    }, 5000); // Changed from 1000 to 5000 (5 seconds)
+    
+    return () => clearInterval(interval);
+  }, [userId, isAuthenticated]);
 
-  // Auto-refresh tasks after 5 seconds on initial load
+  // Filter tasks whenever activeTab changes
   useEffect(() => {
-    if (!isAuthenticated || !userId) return;
-    
-    const timer = setTimeout(() => {
-      console.log('🔄 Auto-refreshing tasks after 5 seconds...');
-      fetchTasks();
-    }, 5000);
-    
-    return () => clearTimeout(timer);
-  }, [userId, isAuthenticated]); // Only run once when userId is available
+    setDisplayLimit(5); // Reset display limit when tab changes
+    filterTasks();
+  }, [activeTab, allTasks]);
 
-  const fetchTasks = async () => {
-    if (!userId) return; // Wait for userId to be available
+  const fetchAllTasks = async () => {
+    if (!userId) return;
     
     try {
       setLoading(true);
       setError(null);
       
-      // Build query params based on active tab
-      const queryParams: any = {
+      console.log('📤 Fetching tasks with params:', {
         page: 1,
-        limit: 50,
+        limit: 100,
+        sortBy: 'createdAt',
+        order: 'desc',
+        clientId: userId,
+      });
+      
+      // Fetch ALL tasks with default params (no filtering)
+      const response = await tasksApi.getMyTasks({
+        page: 1,
+        limit: 100, // Get more tasks
         sortBy: 'createdAt' as const,
         order: 'desc' as const,
         clientId: userId,
-      };
-      
-      // Only add status filter if not "all"
-      if (activeTab !== "all") {
-        queryParams.status = activeTab;
-      }
-      
-      const response = await tasksApi.getMyTasks(queryParams);
+        // No status filter - get all tasks
+      });
+
+      console.log('📥 Raw API Response:', response);
+      console.log('📊 Response data structure:', {
+        success: response.success,
+        hasData: !!response.data,
+        dataKeys: response.data ? Object.keys(response.data) : [],
+        tasksArray: response.data?.data,
+        tasksCount: response.data?.data?.length,
+        pagination: response.data?.pagination,
+      });
 
       if (response.success) {
-        console.log('📊 Fetched tasks:', response.data.data.length, 'tasks');
-        console.log('📋 Tasks data:', response.data.data);
-        setTasks(response.data.data);
-        setTotalTasks(response.data.pagination?.total || response.data.data.length);
-        
-        // Calculate stats from tasks
-        const totalSpent = response.data.data.reduce((sum, task) => {
-          // Use budget field if available (total cost), otherwise calculate from reward
-          if (task.budget) {
-            return sum + parseFloat(task.budget);
-          }
-          // Fallback: calculate from completed assignments
-          const completed = task._count?.assignments || 0;
-          return sum + (completed * parseFloat(task.reward));
-        }, 0);
-        
-        const activeTasks = response.data.data.filter(
-          t => t.status === 'open' || t.status === 'active'
-        ).length;
-        
-        const totalCompletions = response.data.data.reduce(
-          (sum, task) => sum + (task._count?.assignments || 0), 
-          0
-        );
-        
-        setStats({
-          totalSpent,
-          activeTasks,
-          totalCompletions,
-          pendingReviews: 0, // TODO: Add pending reviews count from API
-        });
+        console.log('✅ Fetched all tasks:', response.data.data.length, 'tasks');
+        console.log('📋 First task (sample):', response.data.data[0]);
+        setAllTasks(response.data.data);
+        calculateStats(response.data.data);
       }
     } catch (err: any) {
-      console.error('Error fetching tasks:', err);
+      console.error('❌ Error fetching tasks:', err);
+      console.error('Error details:', {
+        message: err?.message,
+        error: err?.error,
+        response: err?.response,
+      });
       setError(err?.error?.message || 'Failed to load tasks. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Filter tasks based on active tab (frontend filtering)
+  const filterTasks = () => {
+    if (activeTab === "all") {
+      setFilteredTasks(allTasks);
+    } else {
+      const filtered = allTasks.filter(task => task.status === activeTab);
+      setFilteredTasks(filtered);
+    }
+  };
+
+  // Calculate statistics from all tasks
+  const calculateStats = (tasks: Task[]) => {
+    const totalSpent = tasks.reduce((sum, task) => {
+      if (task.budget) {
+        return sum + parseFloat(task.budget);
+      }
+      const completed = task._count?.assignments || 0;
+      return sum + (completed * parseFloat(task.reward));
+    }, 0);
+    
+    const activeTasks = tasks.filter(
+      t => t.status === 'open' || t.status === 'active'
+    ).length;
+    
+    const totalCompletions = tasks.reduce(
+      (sum, task) => sum + (task._count?.assignments || 0), 
+      0
+    );
+    
+    setStats({
+      totalSpent,
+      activeTasks,
+      totalCompletions,
+      pendingReviews: 0, // TODO: Add pending reviews count
+    });
   };
 
   // Format date helper
@@ -281,11 +310,11 @@ export default function ClientDashboard() {
                   ) : error ? (
                     <div className="text-center py-12">
                       <p className="text-red-500 mb-4">{error}</p>
-                      <Button onClick={fetchTasks} variant="outline">
+                      <Button onClick={fetchAllTasks} variant="outline">
                         Try Again
                       </Button>
                     </div>
-                  ) : tasks.length === 0 ? (
+                  ) : filteredTasks.length === 0 ? (
                     <div className="text-center py-12">
                       <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground mb-4">
@@ -304,14 +333,14 @@ export default function ClientDashboard() {
                   ) : (
                     <>
                       {/* Display info about total tasks */}
-                      {tasks.length > 0 && (
+                      {filteredTasks.length > 0 && (
                         <div className="text-sm text-muted-foreground mb-4">
-                          Showing {Math.min(displayLimit, tasks.length)} of {tasks.length} tasks
+                          Showing {Math.min(displayLimit, filteredTasks.length)} of {filteredTasks.length} tasks
                         </div>
                       )}
                       
                       {/* Task list - only show up to displayLimit */}
-                      {tasks.slice(0, displayLimit).map((task) => {
+                      {filteredTasks.slice(0, displayLimit).map((task) => {
                       const completed = task._count?.assignments || 0;
                       const total = task.qty;
                       const reward = parseFloat(task.reward);
@@ -399,20 +428,20 @@ export default function ClientDashboard() {
                     })}
                     
                     {/* See More button - only show if there are more tasks to display */}
-                    {displayLimit < tasks.length && (
+                    {displayLimit < filteredTasks.length && (
                       <div className="flex justify-center pt-6">
                         <Button 
                           variant="outline" 
                           onClick={() => setDisplayLimit(prev => prev + 5)}
                           className="w-full md:w-auto"
                         >
-                          See More ({tasks.length - displayLimit} remaining)
+                          See More ({filteredTasks.length - displayLimit} remaining)
                         </Button>
                       </div>
                     )}
                     
                     {/* Show Less button - only show if we're displaying more than 5 */}
-                    {displayLimit > 5 && displayLimit >= tasks.length && (
+                    {displayLimit > 5 && displayLimit >= filteredTasks.length && (
                       <div className="flex justify-center pt-4">
                         <Button 
                           variant="ghost" 

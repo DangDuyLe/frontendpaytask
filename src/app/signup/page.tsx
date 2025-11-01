@@ -2,22 +2,116 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Briefcase, User, ArrowLeft, UserPlus } from "lucide-react";
+import { Briefcase, User, ArrowLeft, UserPlus, Loader2 } from "lucide-react";
+import { authApi } from "@/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Signup() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"client" | "worker">("worker");
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = () => {
-    console.log("Signup with username:", username, "email:", email, "role:", role);
-    // Handle signup logic here
+  const handleSignup = async () => {
+    // Validation
+    if (!username.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Username is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (username.trim().length < 3) {
+      toast({
+        title: "Validation Error",
+        description: "Username must be at least 3 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Email is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Password is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Validation Error",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const response = await authApi.register({
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        role,
+      });
+
+      if (response.success) {
+        toast({
+          title: "Account Created!",
+          description: `Welcome to PayTask, ${response.data.user.username}!`,
+        });
+
+        // Auto redirect based on role
+        if (role === 'client') {
+          router.push('/client-dashboard');
+        } else {
+          router.push('/worker-dashboard');
+        }
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      toast({
+        title: "Signup Failed",
+        description: err?.error?.message || 'Failed to create account. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -115,13 +209,14 @@ export default function Signup() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="At least 8 characters"
+                    placeholder="At least 6 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
                     className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                   />
                   <p className="text-xs text-gray-500">
-                    Use 8+ characters with a mix of letters, numbers & symbols
+                    At least 6 characters
                   </p>
                 </div>
               </div>
@@ -130,9 +225,19 @@ export default function Signup() {
                 onClick={handleSignup} 
                 className="w-full h-11 text-base font-semibold bg-[#20A277] hover:bg-[#1a8a63] text-white"
                 size="lg"
+                disabled={loading}
               >
-                <UserPlus className="mr-2 h-5 w-5" />
-                Create Account
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    Create Account
+                  </>
+                )}
               </Button>
 
               <div className="relative my-6">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, Info, Calendar } from "lucide-react";
+import { DollarSign, Info, Calendar, Loader2 } from "lucide-react";
+import { tasksApi } from "@/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateTask() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -26,12 +32,169 @@ export default function CreateTask() {
   const platformFee = totalReward * platformFeeRate;
   const totalBudget = totalReward + platformFee;
 
-  const handleSaveDraft = () => {
-    console.log("Saving draft...");
+  const validateForm = () => {
+    if (!title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Task title is required.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!description.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Task description is required.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!category) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a category.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (rewardNum < 0.10 || rewardNum > 1000) {
+      toast({
+        title: "Validation Error",
+        description: "Reward must be between $0.10 and $1000.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (quantityNum < 1 || quantityNum > 10000) {
+      toast({
+        title: "Validation Error",
+        description: "Quantity must be between 1 and 10,000.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!deadline) {
+      toast({
+        title: "Validation Error",
+        description: "Deadline is required.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+    const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+    if (deadlineDate < oneHourFromNow) {
+      toast({
+        title: "Validation Error",
+        description: "Deadline must be at least 1 hour in the future.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (deadlineDate > ninetyDaysFromNow) {
+      toast({
+        title: "Validation Error",
+        description: "Deadline cannot be more than 90 days in the future.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
   };
 
-  const handlePublish = () => {
-    console.log("Publishing task...");
+  const handleSaveDraft = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+      
+      // Convert datetime-local to ISO 8601 format
+      const deadlineISO = deadline ? new Date(deadline).toISOString() : undefined;
+      
+      const response = await tasksApi.createTask({
+        title,
+        description,
+        category,
+        reward: rewardNum,
+        qty: quantityNum,
+        deadline: deadlineISO, 
+      });
+
+      if (response.success) {
+        toast({
+          title: "Draft Saved!",
+          description: "Your task has been saved as a draft.",
+        });
+        
+        // Navigate to client dashboard
+        router.push('/client-dashboard');
+      }
+    } catch (err: any) {
+      console.error('Error saving draft:', err);
+      toast({
+        title: "Error",
+        description: err?.error?.message || 'Failed to save draft. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+      
+      // Convert datetime-local to ISO 8601 format
+      const deadlineISO = deadline ? new Date(deadline).toISOString() : undefined;
+      
+      // First create the task
+      const createResponse = await tasksApi.createTask({
+        title,
+        description,
+        category,
+        reward: rewardNum,
+        qty: quantityNum,
+        deadline: deadlineISO,
+      });
+
+      if (createResponse.success) {
+        // Then publish it
+        const publishResponse = await tasksApi.publishTask(createResponse.data.id);
+
+        if (publishResponse.success) {
+          toast({
+            title: "Task Published!",
+            description: `Your task has been published successfully. ${publishResponse.escrow ? `Escrowed: $${publishResponse.escrow.amount}` : ''}`,
+          });
+          
+          // Navigate to client dashboard
+          router.push('/client-dashboard');
+        }
+      }
+    } catch (err: any) {
+      console.error('Error publishing task:', err);
+      toast({
+        title: "Error",
+        description: err?.error?.message || 'Failed to publish task. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -160,14 +323,30 @@ export default function CreateTask() {
                       variant="outline" 
                       onClick={handleSaveDraft} 
                       className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-9"
+                      disabled={loading}
                     >
-                      Save as Draft
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save as Draft'
+                      )}
                     </Button>
                     <Button 
                       onClick={handlePublish} 
                       className="flex-1 bg-[#20A277] hover:bg-[#1a8d66] text-white h-9"
+                      disabled={loading}
                     >
-                      Publish & Fund Task
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Publishing...
+                        </>
+                      ) : (
+                        'Publish & Fund Task'
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -232,5 +411,3 @@ export default function CreateTask() {
     </div>
   );
 }
-
-

@@ -2,19 +2,73 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogIn, ArrowLeft } from "lucide-react";
+import { LogIn, ArrowLeft, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login with email:", email);
-    // Handle login logic here
+  const handleLogin = async () => {
+    // Validation
+    if (!email.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Email is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Password is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const success = await login(email.trim(), password);
+
+      if (success) {
+        toast({
+          title: "Login Successful!",
+          description: `Welcome back!`,
+        });
+
+        // Redirect to dashboard (role detection will be handled by the dashboard)
+        router.push('/worker-dashboard');
+      } else {
+        toast({
+          title: "Login Failed",
+          description: 'Invalid email or password. Please try again.',
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      toast({
+        title: "Login Failed",
+        description: err?.error?.message || 'Invalid email or password. Please try again.',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,6 +121,7 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   className="h-11 border-gray-300 focus:border-[#20A277] focus:ring-[#20A277]"
                 />
               </div>
@@ -75,9 +130,19 @@ export default function Login() {
                 onClick={handleLogin} 
                 className="w-full h-11 text-base font-semibold bg-[#20A277] hover:bg-[#1a8a63] text-white"
                 size="lg"
+                disabled={loading}
               >
-                <LogIn className="mr-2 h-5 w-5" />
-                Sign In
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Sign In
+                  </>
+                )}
               </Button>
 
               <div className="relative my-6">

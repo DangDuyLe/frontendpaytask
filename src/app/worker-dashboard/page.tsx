@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -7,42 +8,119 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, DollarSign, TrendingUp, Clock, Award, ExternalLink, ArrowRight, Star, Zap, Target, Sparkles, Trophy } from "lucide-react";
+import { 
+  Search, 
+  DollarSign, 
+  TrendingUp, 
+  Clock, 
+  Award, 
+  ExternalLink, 
+  ArrowRight, 
+  Star, 
+  Zap, 
+  Target, 
+  Sparkles, 
+  Trophy,
+  Loader2 
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-
-const mockAssignments = [
-  {
-    id: "1",
-    taskId: "1",
-    qtyId: "qty-1",
-    title: "Verify Restaurant Menu Prices",
-    status: "in_progress",
-    progress: 23,
-    total: 50,
-    reward: 5.00,
-    deadline: "4 hours",
-    client: "FoodieData Inc.",
-  },
-  {
-    id: "2",
-    taskId: "task-2",
-    qtyId: "qty-4",
-    title: "Product review moderation",
-    status: "pending_review",
-    progress: 30,
-    total: 30,
-    reward: 0.75,
-    deadline: "Submitted 2h ago",
-    client: "ShopNow Inc",
-  },
-];
+import { assignmentsApi, type Assignment } from "@/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function WorkerDashboard() {
   const router = useRouter();
-  const totalEarnings = 284.75;
-  const completedTasks = 896;
-  const activeAssignments = 2;
-  const reputation = 4.8;
+  const { user, userId, isAuthenticated } = useAuth();
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState({
+    totalEarnings: 0,
+    completedTasks: 0,
+    activeAssignments: 0,
+    reputation: 0,
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (userId) {
+      fetchAssignments();
+    }
+  }, [isAuthenticated, userId]);
+
+  const fetchAssignments = async () => {
+    if (!userId) return; // Wait for userId to be available
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch active assignments with userId
+      const response = await assignmentsApi.getMyAssignments(userId);
+      
+      if (response.success) {
+        setAssignments(response.data);
+        
+        // Calculate stats
+        const activeCount = response.data.filter(
+          a => a.status === 'in_progress' || a.status === 'pending_review'
+        ).length;
+        
+        const completedCount = response.data.filter(
+          a => a.status === 'completed'
+        ).length;
+        
+        const totalEarnings = response.data
+          .filter(a => a.status === 'completed')
+          .reduce((sum, a) => sum + parseFloat(a.task?.reward || '0'), 0);
+        
+        setStats({
+          totalEarnings,
+          completedTasks: completedCount,
+          activeAssignments: activeCount,
+          reputation: 4.8, // TODO: Get from user profile API
+        });
+      }
+    } catch (err: any) {
+      console.error('Error fetching assignments:', err);
+      setError(err?.error?.message || 'Failed to load assignments. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDeadline = (dueAt: string | null) => {
+    if (!dueAt) return 'No deadline';
+    
+    const deadline = new Date(dueAt);
+    const now = new Date();
+    const diff = deadline.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''}`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`;
+    return 'Urgent';
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'in_progress':
+        return <Badge className="bg-blue-100 text-blue-700 border-0 hover:bg-blue-100 px-2 py-0.5 text-xs">In Progress</Badge>;
+      case 'pending_review':
+        return <Badge className="bg-orange-100 text-orange-700 border-0 hover:bg-orange-100 px-2 py-0.5 text-xs">Pending Review</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-700 border-0 hover:bg-green-100 px-2 py-0.5 text-xs">Completed</Badge>;
+      case 'late':
+        return <Badge variant="destructive" className="px-2 py-0.5 text-xs">Late</Badge>;
+      case 'expired':
+        return <Badge variant="outline" className="px-2 py-0.5 text-xs">Expired</Badge>;
+      default:
+        return <Badge variant="outline" className="px-2 py-0.5 text-xs">{status}</Badge>;
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -90,7 +168,7 @@ export default function WorkerDashboard() {
                     <p className="text-sm font-medium text-gray-600">Total Earnings</p>
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
-                    ${totalEarnings.toFixed(2)}
+                    ${loading ? '...' : stats.totalEarnings.toFixed(2)}
                   </p>
                 </div>
               </CardContent>
@@ -107,7 +185,7 @@ export default function WorkerDashboard() {
                     <p className="text-sm font-medium text-gray-600">Completed</p>
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
-                    {completedTasks}
+                    {loading ? '...' : stats.completedTasks}
                   </p>
                 </div>
               </CardContent>
@@ -120,16 +198,16 @@ export default function WorkerDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-50 rounded-lg relative">
                       <Clock className="h-5 w-5 text-orange-600" />
-                      {activeAssignments > 0 && (
+                      {!loading && stats.activeAssignments > 0 && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                          {activeAssignments}
+                          {stats.activeAssignments}
                         </div>
                       )}
                     </div>
                     <p className="text-sm font-medium text-gray-600">Active Now</p>
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
-                    {activeAssignments}
+                    {loading ? '...' : stats.activeAssignments}
                   </p>
                 </div>
               </CardContent>
@@ -147,20 +225,22 @@ export default function WorkerDashboard() {
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-3xl font-bold text-gray-900">
-                      {reputation}
+                      {loading ? '...' : stats.reputation}
                     </p>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star 
-                          key={star} 
-                          className={`h-4 w-4 ${
-                            star <= Math.floor(reputation) 
-                              ? 'text-yellow-500 fill-yellow-500' 
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    {!loading && (
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star 
+                            key={star} 
+                            className={`h-4 w-4 ${
+                              star <= Math.floor(stats.reputation) 
+                                ? 'text-yellow-500 fill-yellow-500' 
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -173,108 +253,108 @@ export default function WorkerDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    Active Assignments
+                    My Assignments
                   </CardTitle>
                   <CardDescription className="text-sm text-gray-600">
-                    Tasks you're currently working on
+                    Tasks you're currently working on or have completed
                   </CardDescription>
                 </div>
-                {activeAssignments > 0 && (
+                {!loading && stats.activeAssignments > 0 && (
                   <Badge variant="secondary" className="px-3 py-1 text-sm font-medium bg-gray-100 text-gray-700">
-                    {activeAssignments} Active
+                    {stats.activeAssignments} Active
                   </Badge>
                 )}
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              {mockAssignments.map((assignment, index) => (
-                <div
-                  key={assignment.id}
-                  className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    index !== mockAssignments.length - 1 ? 'border-b border-gray-100' : ''
-                  }`}
-                  onClick={() => router.push(`/task-flow/${assignment.taskId}/${assignment.qtyId}`)}
-                >
-                  <div className="space-y-4">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {assignment.status === "in_progress" && (
-                            <Badge className="bg-blue-100 text-blue-700 border-0 hover:bg-blue-100 px-2 py-0.5 text-xs">
-                              In Progress
-                            </Badge>
-                          )}
-                          {assignment.status === "pending_review" && (
-                            <Badge className="bg-orange-100 text-orange-700 border-0 hover:bg-orange-100 px-2 py-0.5 text-xs">
-                              Pending Review
-                            </Badge>
-                          )}
-                          <span className="text-xs font-medium text-gray-500">
-                            {assignment.client}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 hover:text-[#20A277] transition-colors flex items-center gap-2">
-                          {assignment.title}
-                          <ExternalLink className="h-4 w-4 text-gray-400" />
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-gray-500 uppercase">Progress</p>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                              <div 
-                                className="bg-[#20A277] h-1.5 rounded-full transition-all"
-                                style={{ width: `${(assignment.progress / assignment.total) * 100}%` }}
-                              />
-                            </div>
+              {loading ? (
+                <div className="text-center py-16 px-6">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#20A277]" />
+                  <p className="text-gray-600">Loading assignments...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-16 px-6">
+                  <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
+                  <Button onClick={fetchAssignments} className="bg-[#20A277] hover:bg-[#1A8260] text-white font-medium h-11 px-6">
+                    Try Again
+                  </Button>
+                </div>
+              ) : assignments.length > 0 ? (
+                assignments.map((assignment, index) => (
+                  <div
+                    key={assignment.id}
+                    className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
+                      index !== assignments.length - 1 ? 'border-b border-gray-100' : ''
+                    }`}
+                    onClick={() => router.push(`/task-flow/${assignment.taskId}/${assignment.id}`)}
+                  >
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {getStatusBadge(assignment.status)}
+                            <span className="text-xs font-medium text-gray-500">
+                              {assignment.task?.category || 'General'}
+                            </span>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900">{assignment.progress}/{assignment.total}</p>
+                          <h3 className="text-lg font-semibold text-gray-900 hover:text-[#20A277] transition-colors flex items-center gap-2">
+                            {assignment.task?.title || 'Untitled Task'}
+                            <ExternalLink className="h-4 w-4 text-gray-400" />
+                          </h3>
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-gray-500 uppercase">Reward</p>
-                        <div className="flex items-baseline gap-1">
-                          <p className="text-lg font-bold text-[#20A277]">${assignment.reward.toFixed(2)}</p>
-                          <span className="text-xs text-gray-500">/task</span>
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
+                          <p className="text-sm font-semibold text-gray-900 capitalize">
+                            {assignment.status.replace('_', ' ')}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-500 uppercase">Reward</p>
+                          <div className="flex items-baseline gap-1">
+                            <p className="text-lg font-bold text-[#20A277]">${parseFloat(assignment.task?.reward || '0').toFixed(2)}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-500 uppercase">Started</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {assignment.startedAt 
+                              ? new Date(assignment.startedAt).toLocaleDateString()
+                              : 'Not started'
+                            }
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-500 uppercase">Deadline</p>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 text-gray-400" />
+                            <p className="text-sm font-medium text-gray-900">{formatDeadline(assignment.dueAt)}</p>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-gray-500 uppercase">Potential</p>
-                        <p className="text-lg font-bold text-gray-900">${(assignment.total * assignment.reward).toFixed(2)}</p>
+                      {/* Footer */}
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <p className="text-xs font-mono text-gray-500">
+                          ID: {assignment.id}
+                        </p>
+                        <Button variant="ghost" size="sm" className="text-[#20A277] hover:text-[#1A8260] hover:bg-green-50 font-medium h-8">
+                          {assignment.status === 'in_progress' ? 'Continue Working' : 'View Task'}
+                          <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                        </Button>
                       </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-gray-500 uppercase">Deadline</p>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 text-gray-400" />
-                          <p className="text-sm font-medium text-gray-900">{assignment.deadline}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <p className="text-xs font-mono text-gray-500">
-                        ID: {assignment.qtyId}
-                      </p>
-                      <Button variant="ghost" size="sm" className="text-[#20A277] hover:text-[#1A8260] hover:bg-green-50 font-medium h-8">
-                        Continue Working
-                        <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                      </Button>
                     </div>
                   </div>
-                </div>
-              ))}
-
-              {mockAssignments.length === 0 && (
+                ))
+              ) : (
                 <div className="text-center py-16 px-6">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                     <Clock className="h-8 w-8 text-gray-400" />
@@ -300,5 +380,3 @@ export default function WorkerDashboard() {
     </div>
   );
 }
-
-

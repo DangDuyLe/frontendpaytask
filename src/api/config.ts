@@ -1,5 +1,27 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+// In production, use relative URLs to leverage Next.js rewrites (bypassing CORS)
+// In development, use the full backend URL
+
+// Type declaration for process (Next.js environment)
+declare const process: {
+  env: {
+    NEXT_PUBLIC_API_URL?: string;
+  };
+};
+
+const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    // Client-side: Check if we're in production
+    const hostname = window.location.hostname;
+    if (hostname === 'frontendpaytask.onrender.com' || hostname.includes('vercel.app')) {
+      return '/api'; // Use relative URL in production to proxy through Next.js
+    }
+  }
+  // Server-side or development
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to get auth token
 export const getAuthToken = (): string | null => {
